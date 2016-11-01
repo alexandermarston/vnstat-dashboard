@@ -24,7 +24,7 @@ function kbytes_to_string($kb) {
         }
     }
 
-    return sprintf("%0.2f %s", ($kb / $scale), $units[$ui]);
+    return sprintf("%0.2f", ($kb / $scale));
 }
 
 function get_vnstat_data($path, $type, $interface) {
@@ -45,6 +45,7 @@ function get_vnstat_data($path, $type, $interface) {
         return;
     }
 
+    $hourly = array();
     $daily = array();
     $monthly = array();
     $top10 = array();
@@ -52,6 +53,14 @@ function get_vnstat_data($path, $type, $interface) {
     foreach ($vnstat_information as $vnstat_line) {
         $data = explode(";", trim($vnstat_line));
         switch ($data[0]) {
+            case "h": // Hourly
+                $hourly[$data[1]]['time'] = $data[2];
+                $hourly[$data[1]]['label'] = date("g", ($data[2] - ($data[2] % 3600)));
+                $hourly[$data[1]]['rx'] = kbytes_to_string($data[3]);
+                $hourly[$data[1]]['tx'] = kbytes_to_string($data[4]);
+                $hourly[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4]);
+                $hourly[$data[1]]['act'] = 1;
+                break;
             case "d": // Daily
                 $daily[$data[1]]['label'] = date("d/m/Y", $data[2]);
                 $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
@@ -76,11 +85,18 @@ function get_vnstat_data($path, $type, $interface) {
         }
     }
 
+    usort($hourly, function ($item1, $item2) {
+        if ($item1['time'] == $item2['time']) return 0;
+        return $item1['time'] < $item2['time'] ? -1 : 1;
+    });
+    
     rsort($daily);
     rsort($monthly);
     rsort($top10);
 
     switch ($type) {
+        case "hourly":
+            return $hourly;
         case "daily":
             return $daily;
         case "monthly":

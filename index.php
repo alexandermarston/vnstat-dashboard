@@ -11,13 +11,49 @@ require('vnstat.php'); // The vnstat information parser
 
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+            google.charts.load('current', {'packages': ['bar']});
+            google.charts.setOnLoadCallback(drawChart);
+            function drawChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ['Hour', 'Total Traffic'],
+                    <?php
+                    $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $interface);
+
+                    for ($i = 0; $i < count($hourly); $i++) {
+                        $hour = $hourly[$i]['label'];
+                        $totalTraffic = $hourly[$i]['total'];
+
+                        if ($i == 23) {
+                            echo("['" . $hour . "', " . $totalTraffic . "]\n");
+                        } else {
+                            echo("['" . $hour . "', " . $totalTraffic . "],\n");
+                        }
+                    }
+                    ?>
+                ]);
+
+                var options = {
+                    title: 'Hourly Network Traffic',
+                    subtitle: 'over last 24 hours',
+                    vAxis: {format: '## MB'}
+                };
+                
+                var chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
+ 		chart.draw(data, google.charts.Bar.convertOptions(options));
+            }
+        </script>
     </head>
     <body>
         <div class="container">
             <div class="page-header">
                 <h1>Network Traffic (<?php echo $interface; ?>)</h1>
             </div>
-            
+
+            <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
+
             <h2>Daily</h2>
             <table class="table table-bordered">
                 <thead>
@@ -39,12 +75,12 @@ require('vnstat.php'); // The vnstat information parser
                             $totalSent = $daily[$i]['tx'];
                             $totalTraffic = $daily[$i]['total'];
                             ?>
-                    <tr>
-                        <td><?php echo $day; ?></td>
-                        <td><?php echo $totalReceived; ?></td>
-                        <td><?php echo $totalSent; ?></td>
-                        <td><?php echo $totalTraffic; ?></td>
-                    </tr>
+                            <tr>
+                                <td><?php echo $day; ?></td>
+                                <td><?php echo $totalReceived; ?></td>
+                                <td><?php echo $totalSent; ?></td>
+                                <td><?php echo $totalTraffic; ?></td>
+                            </tr>
                             <?php
                         }
                     }
@@ -65,22 +101,21 @@ require('vnstat.php'); // The vnstat information parser
                 <tbody>
                     <?php
                     $monthly = get_vnstat_data($vnstat_bin_dir, "monthly", $interface);
-                    
+
                     for ($i = 0; $i < count($monthly); $i++) {
                         if ($monthly[$i]['act'] == 1) {
                             $month = $monthly[$i]['label'];
                             $totalReceived = $monthly[$i]['rx'];
                             $totalSent = $monthly[$i]['tx'];
                             $totalTraffic = $monthly[$i]['total'];
-                            
                             ?>
-                    <tr>
-                        <td><?php echo $month; ?></td>
-                        <td><?php echo $totalReceived; ?></td>
-                        <td><?php echo $totalSent; ?></td>
-                        <td><?php echo $totalTraffic; ?></td>
-                    </tr>
-                    <?php
+                            <tr>
+                                <td><?php echo $month; ?></td>
+                                <td><?php echo $totalReceived; ?></td>
+                                <td><?php echo $totalSent; ?></td>
+                                <td><?php echo $totalTraffic; ?></td>
+                            </tr>
+                            <?php
                         }
                     }
                     ?>
@@ -108,16 +143,16 @@ require('vnstat.php'); // The vnstat information parser
                             $totalSent = $top10[$i]['tx'];
                             $totalTraffic = $top10[$i]['total'];
                             ?>
-                    <tr>
-                        <td><?php echo $day; ?></td>
-                        <td><?php echo $totalReceived; ?></td>
-                        <td><?php echo $totalSent; ?></td>
-                        <td><?php echo $totalTraffic; ?></td>
-                    </tr>
-        <?php
-    }
-}
-?>
+                            <tr>
+                                <td><?php echo $day; ?></td>
+                                <td><?php echo $totalReceived; ?></td>
+                                <td><?php echo $totalSent; ?></td>
+                                <td><?php echo $totalTraffic; ?></td>
+                            </tr>
+                            <?php
+                        }
+                    }
+                    ?>
                 </tbody>
             </table>
         </div>
