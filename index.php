@@ -1,6 +1,35 @@
 <?php
 require('config.php'); // Include all the configuration information
 require('vnstat.php'); // The vnstat information parser
+
+function print_options() {
+    global $interface_list;
+    
+    $i = 0;
+    foreach ($interface_list as $interface)
+    {
+        $i++;
+        if ($i == count($interface_list)) {
+                echo "<a href=\"?i=" . $interface . "\">" . $interface . "</a>";
+        } else {
+                echo "<a href=\"?i=" . $interface . "\">" . $interface . ", </a>";
+        }
+    }
+}
+
+$thisInterface = "";
+
+if (isset($_GET['i'])) {
+    $interfaceChosen = $_GET['i'];
+    if (in_array($interfaceChosen, $interface_list, true)) {
+        $thisInterface = $interfaceChosen;
+    } else {
+        $thisInterface = reset($interface_list);
+    }
+} else {
+    // Assume they mean the first interface
+    $thisInterface = reset($interface_list);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +49,7 @@ require('vnstat.php'); // The vnstat information parser
                 var data = google.visualization.arrayToDataTable([
                     ['Hour', 'Total Traffic'],
                     <?php
-                    $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $interface);
+                    $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $thisInterface);
 
                     for ($i = 0; $i < count($hourly); $i++) {
                         $hour = $hourly[$i]['label'];
@@ -49,7 +78,7 @@ require('vnstat.php'); // The vnstat information parser
     <body>
         <div class="container">
             <div class="page-header">
-                <h1>Network Traffic (<?php echo $interface; ?>)</h1>
+                <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php print_options(); ?>
             </div>
 
             <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
@@ -66,7 +95,7 @@ require('vnstat.php'); // The vnstat information parser
                 </thead>
                 <tbody>
                     <?php
-                    $daily = get_vnstat_data($vnstat_bin_dir, "daily", $interface);
+                    $daily = get_vnstat_data($vnstat_bin_dir, "daily", $thisInterface);
 
                     for ($i = 0; $i < count($daily); $i++) {
                         if ($daily[$i]['act'] == 1) {
@@ -100,7 +129,7 @@ require('vnstat.php'); // The vnstat information parser
                 </thead>
                 <tbody>
                     <?php
-                    $monthly = get_vnstat_data($vnstat_bin_dir, "monthly", $interface);
+                    $monthly = get_vnstat_data($vnstat_bin_dir, "monthly", $thisInterface);
 
                     for ($i = 0; $i < count($monthly); $i++) {
                         if ($monthly[$i]['act'] == 1) {
@@ -134,7 +163,7 @@ require('vnstat.php'); // The vnstat information parser
                 </thead>
                 <tbody>
                     <?php
-                    $top10 = get_vnstat_data($vnstat_bin_dir, "top10", $interface);
+                    $top10 = get_vnstat_data($vnstat_bin_dir, "top10", $thisInterface);
 
                     for ($i = 0; $i < count($top10); $i++) {
                         if ($top10[$i]['act'] == 1) {

@@ -55,7 +55,7 @@ function get_vnstat_data($path, $type, $interface) {
         switch ($data[0]) {
             case "h": // Hourly
                 $hourly[$data[1]]['time'] = $data[2];
-                $hourly[$data[1]]['label'] = date("g", ($data[2] - ($data[2] % 3600)));
+                $hourly[$data[1]]['label'] = date("ga", ($data[2] - ($data[2] % 3600)));
                 $hourly[$data[1]]['rx'] = kbytes_to_string($data[3]);
                 $hourly[$data[1]]['tx'] = kbytes_to_string($data[4]);
                 $hourly[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4]);
