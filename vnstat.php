@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-function kbytes_to_string($kb) {
+function kbytes_to_string($kb, $wSuf) {
     $byte_notation = "MB";
 
     $units = array('TB', 'GB', 'MB', 'KB');
@@ -24,7 +24,11 @@ function kbytes_to_string($kb) {
         }
     }
 
-    return sprintf("%0.2f", ($kb / $scale));
+    if (isset($wSuf)) {
+        return sprintf("%0.2f %s", ($kb/$scale),$units[$ui]);
+    } else {
+        return sprintf("%0.2f", ($kb / $scale));
+    }
 }
 
 function get_vnstat_data($path, $type, $interface) {
@@ -63,23 +67,23 @@ function get_vnstat_data($path, $type, $interface) {
                 break;
             case "d": // Daily
                 $daily[$data[1]]['label'] = date("d/m/Y", $data[2]);
-                $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
-                $daily[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
-                $daily[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
+                $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
+                $daily[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
+                $daily[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true);
                 $daily[$data[1]]['act'] = $data[7];
                 break;
             case "m": // Monthly
                 $monthly[$data[1]]['label'] = date("F", $data[2]);
-                $monthly[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
-                $monthly[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
-                $monthly[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
+                $monthly[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
+                $monthly[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
+                $monthly[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true);
                 $monthly[$data[1]]['act'] = $data[7];
                 break;
             case "t": // Top 10
                 $top10[$data[1]]['label'] = date("d/m/Y", $data[2]);
-                $top10[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
-                $top10[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
-                $top10[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
+                $top10[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
+                $top10[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
+                $top10[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true);
                 $top10[$data[1]]['act'] = $data[7];
                 break;
         }
