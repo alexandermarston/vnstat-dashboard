@@ -31,6 +31,25 @@ function kbytes_to_string($kb, $wSuf) {
     }
 }
 
+function get_vnstat_interfaces($path) {
+    $vnstat_interfaces = array(); // Create an empty array
+    
+    $vnstatIF = popen("$path --iflist", "r");
+    if (is_resource($vnstatIF)) {
+        $iBuffer = '';
+        while (!feof($vnstatIF)) {
+            $iBuffer .= fgets($vnstatIF);
+        }
+    
+        $vnstat_temp = trim(str_replace("Available interfaces: ", "", $iBuffer));
+        
+        $vnstat_interfaces = explode(" ", $vnstat_temp);
+        pclose($vnstatIF);
+    }
+    
+    return $vnstat_interfaces;
+}
+
 function get_vnstat_data($path, $type, $interface) {
 
     $vnstat_information = array(); // Create an empty array for use later
@@ -66,6 +85,7 @@ function get_vnstat_data($path, $type, $interface) {
                 $hourly[$data[1]]['act'] = 1;
                 break;
             case "d": // Daily
+                $daily[$data[1]]['time'] = $data[2];
                 $daily[$data[1]]['label'] = date("d/m/Y", $data[2]);
                 $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
                 $daily[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
@@ -73,6 +93,7 @@ function get_vnstat_data($path, $type, $interface) {
                 $daily[$data[1]]['act'] = $data[7];
                 break;
             case "m": // Monthly
+                $monthly[$data[1]]['time'] = $data[2];
                 $monthly[$data[1]]['label'] = date("F", $data[2]);
                 $monthly[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
                 $monthly[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
@@ -80,9 +101,11 @@ function get_vnstat_data($path, $type, $interface) {
                 $monthly[$data[1]]['act'] = $data[7];
                 break;
             case "t": // Top 10
+                $top10[$data[1]]['time'] = $data[2];
                 $top10[$data[1]]['label'] = date("d/m/Y", $data[2]);
                 $top10[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
                 $top10[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
+                $top10[$data[1]]['totalraw'] = (($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
                 $top10[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true);
                 $top10[$data[1]]['act'] = $data[7];
                 break;
@@ -94,10 +117,22 @@ function get_vnstat_data($path, $type, $interface) {
         return $item1['time'] < $item2['time'] ? -1 : 1;
     });
     
-    rsort($daily);
-    rsort($monthly);
-    rsort($top10);
-
+    usort($daily, function ($item1, $item2) {
+        if ($item1['time'] == $item2['time']) return 0;
+        return $item1['time'] > $item2['time'] ? -1 : 1;
+    });
+    
+    usort($monthly, function ($item1, $item2) {
+        if ($item1['time'] == $item2['time']) return 0;
+        return $item1['time'] > $item2['time'] ? -1 : 1;
+    });
+    
+    // Sort Top 10 Days by Highest Total Usage first
+    usort($top10, function ($item1, $item2) {
+        if ($item1['totalraw'] == $item2['totalraw']) return 0;
+        return $item1['totalraw'] > $item2['totalraw'] ? -1 : 1;
+    });
+    
     switch ($type) {
         case "hourly":
             return $hourly;

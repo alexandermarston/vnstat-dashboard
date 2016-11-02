@@ -1,6 +1,6 @@
 <?php
-require('config.php'); // Include all the configuration information
 require('vnstat.php'); // The vnstat information parser
+require('config.php'); // Include all the configuration information
 
 function print_options() {
     global $interface_list;
@@ -67,7 +67,7 @@ if (isset($_GET['i'])) {
                 var options = {
                     title: 'Hourly Network Traffic',
                     subtitle: 'over last 24 hours',
-                    vAxis: {format: '## MB'}
+                    vAxis: {format: '##.## MB'}
                 };
                 
                 var chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
