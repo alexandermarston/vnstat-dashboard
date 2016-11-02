@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-function kbytes_to_string($kb, $wSuf) {
+function kbytes_to_string($kb, $wSuf = false) {
     $byte_notation = "MB";
 
     $units = array('TB', 'GB', 'MB', 'KB');
@@ -24,7 +24,7 @@ function kbytes_to_string($kb, $wSuf) {
         }
     }
 
-    if (isset($wSuf)) {
+    if ($wSuf == true) {
         return sprintf("%0.2f %s", ($kb/$scale),$units[$ui]);
     } else {
         return sprintf("%0.2f", ($kb / $scale));
