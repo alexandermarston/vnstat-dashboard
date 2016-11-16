@@ -1,4 +1,22 @@
 <?php
+
+/* 
+ * Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 require('vnstat.php'); // The vnstat information parser
 require('config.php'); // Include all the configuration information
 
@@ -48,18 +66,20 @@ if (isset($_GET['i'])) {
             google.charts.setOnLoadCallback(drawChart);
             function drawChart() {
                 var data = google.visualization.arrayToDataTable([
-                    ['Hour', 'Total Traffic'],
+                    ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                     <?php
                     $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $thisInterface);
 
                     for ($i = 0; $i < count($hourly); $i++) {
                         $hour = $hourly[$i]['label'];
+                        $inTraffic = $hourly[$i]['rx'];
+                        $outTraffic = $hourly[$i]['tx'];
                         $totalTraffic = $hourly[$i]['total'];
-
+                        
                         if ($i == 23) {
-                            echo("['" . $hour . "', " . $totalTraffic . "]\n");
+                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
                         } else {
-                            echo("['" . $hour . "', " . $totalTraffic . "],\n");
+                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                         }
                     }
                     ?>

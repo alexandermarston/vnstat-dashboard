@@ -1,14 +1,24 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// $wSuf (without suffix MB, GB, etc)
 function kbytes_to_string($kb, $wSuf = false) {
-    $byte_notation = "MB";
-
     $units = array('TB', 'GB', 'MB', 'KB');
     $scale = 1024 * 1024 * 1024;
     $ui = 0;
@@ -25,9 +35,9 @@ function kbytes_to_string($kb, $wSuf = false) {
     }
 
     if ($wSuf == true) {
-        return sprintf("%0.2f %s", ($kb/$scale),$units[$ui]);
+        return sprintf("%0.2f", ($kb/$scale));
     } else {
-        return sprintf("%0.2f", ($kb / $scale));
+        return sprintf("%0.2f %s", ($kb / $scale), $units[$ui]);
     }
 }
 
@@ -55,6 +65,7 @@ function get_vnstat_data($path, $type, $interface) {
     $vnstat_information = array(); // Create an empty array for use later
 
     $vnstatDS = popen("$path --dumpdb -i $interface", "r");
+    //$vnstatDS = fopen("dump.db", "r");
     if (is_resource($vnstatDS)) {
         $buffer = '';
         while (!feof($vnstatDS)) {
@@ -79,34 +90,34 @@ function get_vnstat_data($path, $type, $interface) {
             case "h": // Hourly
                 $hourly[$data[1]]['time'] = $data[2];
                 $hourly[$data[1]]['label'] = date("ga", ($data[2] - ($data[2] % 3600)));
-                $hourly[$data[1]]['rx'] = kbytes_to_string($data[3]);
-                $hourly[$data[1]]['tx'] = kbytes_to_string($data[4]);
-                $hourly[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4]);
+                $hourly[$data[1]]['rx'] = kbytes_to_string($data[3], true);
+                $hourly[$data[1]]['tx'] = kbytes_to_string($data[4], true);
+                $hourly[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4], true);
                 $hourly[$data[1]]['act'] = 1;
                 break;
             case "d": // Daily
                 $daily[$data[1]]['time'] = $data[2];
                 $daily[$data[1]]['label'] = date("d/m/Y", $data[2]);
-                $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
-                $daily[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
-                $daily[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true);
+                $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
+                $daily[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
+                $daily[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
                 $daily[$data[1]]['act'] = $data[7];
                 break;
             case "m": // Monthly
                 $monthly[$data[1]]['time'] = $data[2];
                 $monthly[$data[1]]['label'] = date("F", $data[2]);
-                $monthly[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
-                $monthly[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
-                $monthly[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true);
+                $monthly[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
+                $monthly[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
+                $monthly[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
                 $monthly[$data[1]]['act'] = $data[7];
                 break;
             case "t": // Top 10
                 $top10[$data[1]]['time'] = $data[2];
                 $top10[$data[1]]['label'] = date("d/m/Y", $data[2]);
-                $top10[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5], true);
-                $top10[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6], true);
+                $top10[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
+                $top10[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
                 $top10[$data[1]]['totalraw'] = (($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
-                $top10[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true);
+                $top10[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
                 $top10[$data[1]]['act'] = $data[7];
                 break;
         }
