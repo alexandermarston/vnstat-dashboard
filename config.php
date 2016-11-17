@@ -25,6 +25,9 @@ $vnstat_bin_dir = '/usr/local/bin/vnstat';
 // Set to true to set your own interfaces
 $use_predefined_interfaces = false;
 
+// Byte format to use in graphs
+$byte_formatter = "MB";
+
 if ($use_predefined_interfaces == true) {
     $interface_list = array("eth0", "eth1");
 

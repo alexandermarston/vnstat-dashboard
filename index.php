@@ -68,13 +68,14 @@ if (isset($_GET['i'])) {
                 var data = google.visualization.arrayToDataTable([
                     ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                     <?php
-                    $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $thisInterface);
+                    $hourlyGraph = get_vnstat_data($vnstat_bin_dir, "hourlyGraph", $thisInterface);
 
-                    for ($i = 0; $i < count($hourly); $i++) {
-                        $hour = $hourly[$i]['label'];
-                        $inTraffic = $hourly[$i]['rx'];
-                        $outTraffic = $hourly[$i]['tx'];
-                        $totalTraffic = $hourly[$i]['total'];
+                    for ($i = 0; $i < count($hourlyGraph); $i++) {
+                        $hour = $hourlyGraph[$i]['label'];
+                        $inTraffic = $hourlyGraph[$i]['rx'];
+                        $outTraffic = $hourlyGraph[$i]['tx'];
+                        $totalTraffic = $hourlyGraph[$i]['total'];
+                        
                         
                         if ($i == 23) {
                             echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
@@ -88,7 +89,7 @@ if (isset($_GET['i'])) {
                 var options = {
                     title: 'Hourly Network Traffic',
                     subtitle: 'over last 24 hours',
-                    vAxis: {format: '##.## MB'}
+                    vAxis: {format: '##.## <?php echo $byte_formatter; ?>'}
                 };
 
                 var chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
@@ -109,6 +110,7 @@ if (isset($_GET['i'])) {
         <div id="tabNav" class="container">
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#daily" data-toggle="tab">Daily</a></li>
+                <li><a href="#hourly" data-toggle="tab">Hourly</a></li>
                 <li><a href="#monthly" data-toggle="tab">Monthly</a></li>
                 <li><a href="#top10" data-toggle="tab">Top 10</a></li>
             </ul>
@@ -143,6 +145,38 @@ if (isset($_GET['i'])) {
                                     </tr>
                                     <?php
                                 }
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="hourly">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Hour</th>
+                                <th>Received</th>
+                                <th>Sent</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $thisInterface);
+
+                            for ($i = 0; $i < count($hourly); $i++) {
+                                $hour = $hourly[$i]['label'];
+                                $totalReceived = $hourly[$i]['rx'];
+                                $totalSent = $hourly[$i]['tx'];
+                                $totalTraffic = $hourly[$i]['total'];
+                                ?>
+                                <tr>
+                                    <td><?php echo $hour; ?></td>
+                                    <td><?php echo $totalReceived; ?></td>
+                                    <td><?php echo $totalSent; ?></td>
+                                    <td><?php echo $totalTraffic; ?></td>
+                                </tr>
+                                <?php
                             }
                             ?>
                         </tbody>
