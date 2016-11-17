@@ -1,6 +1,5 @@
 <?php
-
-/* 
+/*
  * Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -57,14 +56,18 @@ if (isset($_GET['i'])) {
 
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-
+        <link rel="stylesheet" href="css/style.css">
+        
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
         <script type="text/javascript">
             google.charts.load('current', {'packages': ['bar']});
-            google.charts.setOnLoadCallback(drawChart);
-            function drawChart() {
+            google.charts.setOnLoadCallback(drawHourlyChart);
+            google.charts.setOnLoadCallback(drawDailyChart);
+            google.charts.setOnLoadCallback(drawMonthlyChart);
+
+            function drawHourlyChart() {
                 var data = google.visualization.arrayToDataTable([
                     ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                     <?php
@@ -75,8 +78,11 @@ if (isset($_GET['i'])) {
                         $inTraffic = $hourlyGraph[$i]['rx'];
                         $outTraffic = $hourlyGraph[$i]['tx'];
                         $totalTraffic = $hourlyGraph[$i]['total'];
-                        
-                        
+
+                        if ($hourlyGraph[$i]['time'] == "0") {
+                            continue;
+                        }
+
                         if ($i == 23) {
                             echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
                         } else {
@@ -95,6 +101,74 @@ if (isset($_GET['i'])) {
                 var chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
                 chart.draw(data, google.charts.Bar.convertOptions(options));
             }
+            function drawDailyChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                    <?php
+                    $dailyGraph = get_vnstat_data($vnstat_bin_dir, "dailyGraph", $thisInterface);
+
+                    for ($i = 0; $i < count($dailyGraph); $i++) {
+                        $day = $dailyGraph[$i]['label'];
+                        $inTraffic = $dailyGraph[$i]['rx'];
+                        $outTraffic = $dailyGraph[$i]['tx'];
+                        $totalTraffic = $dailyGraph[$i]['total'];
+
+                        if ($dailyGraph[$i]['time'] == "0") {
+                            continue;
+                        }
+
+                        if ($i == 29) {
+                            echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+                        } else {
+                            echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
+                        }
+                    }
+                    ?>
+                ]);
+
+                var options = {
+                    title: 'Daily Network Traffic',
+                    subtitle: 'over last 29 days (most recent first)',
+                    vAxis: {format: '##.## <?php echo $byte_formatter; ?>'}
+                };
+
+                var chart = new google.charts.Bar(document.getElementById('dailyNetworkTrafficGraph'));
+                chart.draw(data, google.charts.Bar.convertOptions(options));
+            }
+            function drawMonthlyChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ['Month', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                    <?php
+                    $monthlyGraph = get_vnstat_data($vnstat_bin_dir, "monthlyGraph", $thisInterface);
+
+                    for ($i = 0; $i < count($monthlyGraph); $i++) {
+                        $hour = $monthlyGraph[$i]['label'];
+                        $inTraffic = $monthlyGraph[$i]['rx'];
+                        $outTraffic = $monthlyGraph[$i]['tx'];
+                        $totalTraffic = $monthlyGraph[$i]['total'];
+
+                        if ($monthlyGraph[$i]['time'] == "0") {
+                            continue;
+                        }
+
+                        if ($i == 23) {
+                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+                        } else {
+                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
+                        }
+                    }
+                    ?>
+                ]);
+
+                var options = {
+                    title: 'Monthly Network Traffic',
+                    subtitle: 'over last 12 months',
+                    vAxis: {format: '##.## <?php echo $byte_formatter; ?>'}
+                };
+
+                var chart = new google.charts.Bar(document.getElementById('monthlyNetworkTrafficGraph'));
+                chart.draw(data, google.charts.Bar.convertOptions(options));
+            }
         </script>
     </head>
     <body>
@@ -102,9 +176,28 @@ if (isset($_GET['i'])) {
             <div class="page-header">
                 <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php print_options(); ?>
             </div>
+        </div>
 
-            <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
+        <div id="graphTabNav" class="container">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#hourlyGraph" data-toggle="tab">Hourly Graph</a></li>
+                <li><a href="#dailyGraph" data-toggle="tab">Daily Graph</a></li>
+                <li><a href="#monthlyGraph" data-toggle="tab">Monthly Graph</a></li>
+            </ul>
 
+            <div class="tab-content">
+                <div class="tab-pane active" id="hourlyGraph">
+                    <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
+                </div>
+
+                <div class="tab-pane" id="dailyGraph">
+                    <div id="dailyNetworkTrafficGraph" style="height: 300px;"></div>
+                </div>
+
+                <div class="tab-pane" id="monthlyGraph">
+                    <div id="monthlyNetworkTrafficGraph" style="height: 300px;"></div>
+                </div>
+            </div>
         </div>
 
         <div id="tabNav" class="container">
@@ -143,7 +236,7 @@ if (isset($_GET['i'])) {
                                         <td><?php echo $totalSent; ?></td>
                                         <td><?php echo $totalTraffic; ?></td>
                                     </tr>
-                                    <?php
+                            <?php
                                 }
                             }
                             ?>
@@ -176,7 +269,7 @@ if (isset($_GET['i'])) {
                                     <td><?php echo $totalSent; ?></td>
                                     <td><?php echo $totalTraffic; ?></td>
                                 </tr>
-                                <?php
+                            <?php
                             }
                             ?>
                         </tbody>
@@ -209,7 +302,7 @@ if (isset($_GET['i'])) {
                                         <td><?php echo $totalSent; ?></td>
                                         <td><?php echo $totalTraffic; ?></td>
                                     </tr>
-                                    <?php
+                            <?php
                                 }
                             }
                             ?>
@@ -243,7 +336,7 @@ if (isset($_GET['i'])) {
                                         <td><?php echo $totalSent; ?></td>
                                         <td><?php echo $totalTraffic; ?></td>
                                     </tr>
-                                    <?php
+                            <?php
                                 }
                             }
                             ?>

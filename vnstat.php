@@ -101,7 +101,9 @@ function get_vnstat_data($path, $type, $interface) {
 
     $hourlyGraph = array();
     $hourly = array();
+    $dailyGraph = array();
     $daily = array();
+    $monthlyGraph = array();
     $monthly = array();
     $top10 = array();
 
@@ -127,6 +129,15 @@ function get_vnstat_data($path, $type, $interface) {
                 $hourly[$data[1]]['act'] = 1;
                 break;
             case "d": // Daily
+                // Set-up the daily graph data
+                $dailyGraph[$data[1]]['time'] = $data[2];
+                $dailyGraph[$data[1]]['label'] = date("jS", $data[2]);
+                $dailyGraph[$data[1]]['rx'] = kbytes_to_string(($data[3] * 1024 + $data[5]), true, $byte_formatter);
+                $dailyGraph[$data[1]]['tx'] = kbytes_to_string(($data[4] * 1024 + $data[6]), true, $byte_formatter);
+                $dailyGraph[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true, $byte_formatter);
+                $dailyGraph[$data[1]]['totalUnformatted'] = (($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
+                $dailyGraph[$data[1]]['act'] = 1;
+                
                 $daily[$data[1]]['time'] = $data[2];
                 $daily[$data[1]]['label'] = date("d/m/Y", $data[2]);
                 $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
@@ -135,6 +146,15 @@ function get_vnstat_data($path, $type, $interface) {
                 $daily[$data[1]]['act'] = $data[7];
                 break;
             case "m": // Monthly
+                // Set-up the monthly graph data
+                $monthlyGraph[$data[1]]['time'] = $data[2];
+                $monthlyGraph[$data[1]]['label'] = date("F", ($data[2] - ($data[2] % 3600)));
+                $monthlyGraph[$data[1]]['rx'] = kbytes_to_string(($data[3] * 1024 + $data[5]), true, $byte_formatter);
+                $monthlyGraph[$data[1]]['tx'] = kbytes_to_string(($data[4] * 1024 + $data[6]), true, $byte_formatter);
+                $monthlyGraph[$data[1]]['total'] = kbytes_to_string((($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6])), true, $byte_formatter);
+                $monthlyGraph[$data[1]]['totalUnformatted'] = ($data[3] + $data[4]);
+                $monthlyGraph[$data[1]]['act'] = 1;
+                
                 $monthly[$data[1]]['time'] = $data[2];
                 $monthly[$data[1]]['label'] = date("F", $data[2]);
                 $monthly[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
@@ -163,8 +183,18 @@ function get_vnstat_data($path, $type, $interface) {
         if ($item1['time'] == $item2['time']) return 0;
         return $item1['time'] < $item2['time'] ? -1 : 1;
     });
+    
+    usort($dailyGraph, function ($item1, $item2) {
+        if ($item1['time'] == $item2['time']) return 0;
+        return $item1['time'] > $item2['time'] ? -1 : 1;
+    });
 
     usort($daily, function ($item1, $item2) {
+        if ($item1['time'] == $item2['time']) return 0;
+        return $item1['time'] > $item2['time'] ? -1 : 1;
+    });
+    
+    usort($monthlyGraph, function ($item1, $item2) {
         if ($item1['time'] == $item2['time']) return 0;
         return $item1['time'] > $item2['time'] ? -1 : 1;
     });
@@ -185,8 +215,12 @@ function get_vnstat_data($path, $type, $interface) {
             return $hourlyGraph;
         case "hourly":
             return $hourly;
+        case "dailyGraph":
+            return $dailyGraph;
         case "daily":
             return $daily;
+        case "monthlyGraph":
+            return $monthlyGraph;
         case "monthly":
             return $monthly;
         case "top10":
