@@ -202,13 +202,45 @@ if (isset($_GET['i'])) {
 
         <div id="tabNav" class="container">
             <ul class="nav nav-tabs">
-                <li class="active"><a href="#daily" data-toggle="tab">Daily</a></li>
-                <li><a href="#hourly" data-toggle="tab">Hourly</a></li>
+                <li class="active"><a href="#hourly" data-toggle="tab">Hourly</a></li>
+                <li><a href="#daily" data-toggle="tab">Daily</a></li>
                 <li><a href="#monthly" data-toggle="tab">Monthly</a></li>
                 <li><a href="#top10" data-toggle="tab">Top 10</a></li>
             </ul>
 
             <div class="tab-content">
+                <div class="tab-pane" id="hourly">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Hour</th>
+                                <th>Received</th>
+                                <th>Sent</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $thisInterface);
+
+                            for ($i = 0; $i < count($hourly); $i++) {
+                                $hour = $hourly[$i]['label'];
+                                $totalReceived = $hourly[$i]['rx'];
+                                $totalSent = $hourly[$i]['tx'];
+                                $totalTraffic = $hourly[$i]['total'];
+                                ?>
+                                <tr>
+                                    <td><?php echo $hour; ?></td>
+                                    <td><?php echo $totalReceived; ?></td>
+                                    <td><?php echo $totalSent; ?></td>
+                                    <td><?php echo $totalTraffic; ?></td>
+                                </tr>
+                            <?php
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
                 <div class="tab-pane active" id="daily">
                     <table class="table table-bordered">
                         <thead>
@@ -238,38 +270,6 @@ if (isset($_GET['i'])) {
                                     </tr>
                             <?php
                                 }
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="tab-pane" id="hourly">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Hour</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $thisInterface);
-
-                            for ($i = 0; $i < count($hourly); $i++) {
-                                $hour = $hourly[$i]['label'];
-                                $totalReceived = $hourly[$i]['rx'];
-                                $totalSent = $hourly[$i]['tx'];
-                                $totalTraffic = $hourly[$i]['total'];
-                                ?>
-                                <tr>
-                                    <td><?php echo $hour; ?></td>
-                                    <td><?php echo $totalReceived; ?></td>
-                                    <td><?php echo $totalSent; ?></td>
-                                    <td><?php echo $totalTraffic; ?></td>
-                                </tr>
-                            <?php
                             }
                             ?>
                         </tbody>
