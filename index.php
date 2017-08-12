@@ -209,7 +209,7 @@ if (isset($_GET['i'])) {
             </ul>
 
             <div class="tab-content">
-                <div class="tab-pane" id="hourly">
+                <div class="tab-pane active" id="hourly">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -241,7 +241,7 @@ if (isset($_GET['i'])) {
                         </tbody>
                     </table>
                 </div>
-                <div class="tab-pane active" id="daily">
+                <div class="tab-pane" id="daily">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
