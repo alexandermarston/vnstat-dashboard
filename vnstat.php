@@ -80,7 +80,7 @@ function get_largest_prefix($kb) {
 }
 
 function get_vnstat_data($path, $type, $interface) {
-    global $byte_formatter;
+    global $byte_formatter, $vnstat_config_format_hour;
     
     $vnstat_information = array(); // Create an empty array for use later
 
@@ -113,7 +113,7 @@ function get_vnstat_data($path, $type, $interface) {
             case "h": // Hourly
                 // Set-up the hourly graph data
                 $hourlyGraph[$data[1]]['time'] = $data[2];
-                $hourlyGraph[$data[1]]['label'] = date("ga", ($data[2] - ($data[2] % 3600)));
+                $hourlyGraph[$data[1]]['label'] = date($vnstat_config_format_hour, ($data[2] - ($data[2] % 3600)));
                 $hourlyGraph[$data[1]]['rx'] = kbytes_to_string($data[3], true, $byte_formatter);
                 $hourlyGraph[$data[1]]['tx'] = kbytes_to_string($data[4], true, $byte_formatter);
                 $hourlyGraph[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4], true, $byte_formatter);
@@ -122,7 +122,7 @@ function get_vnstat_data($path, $type, $interface) {
 
                 // Set up the hourly table data
                 $hourly[$data[1]]['time'] = $data[2];
-                $hourly[$data[1]]['label'] = date("ga", ($data[2] - ($data[2] % 3600)));
+                $hourly[$data[1]]['label'] = date($vnstat_config_format_hour, ($data[2] - ($data[2] % 3600)));
                 $hourly[$data[1]]['rx'] = kbytes_to_string($data[3]);
                 $hourly[$data[1]]['tx'] = kbytes_to_string($data[4]);
                 $hourly[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4]);
@@ -227,3 +227,4 @@ function get_vnstat_data($path, $type, $interface) {
             return $top10;
     }
 }
+?>
