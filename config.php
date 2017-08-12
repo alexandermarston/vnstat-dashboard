@@ -19,6 +19,8 @@
 
 error_reporting(E_ALL | E_NOTICE);
 
+date_default_timezone_set('Europe/Brussels');
+
 // Path of vnstat
 $vnstat_bin_dir = '/usr/local/bin/vnstat';
 
