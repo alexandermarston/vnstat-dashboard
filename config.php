@@ -19,8 +19,6 @@
 
 error_reporting(E_ALL | E_NOTICE);
 
-date_default_timezone_set('Europe/Brussels');
-
 // date format: hourly
 // ga = 12-hour am/pm (ex. 11am)
 // H = 24-hour (ex. 23)
