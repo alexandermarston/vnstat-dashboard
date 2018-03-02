@@ -51,7 +51,7 @@ function get_vnstat_interfaces($path) {
             $iBuffer .= fgets($vnstatIF);
         }
 
-        $vnstat_temp = trim(str_replace("Available interfaces: ", "", $iBuffer));
+        $vnstat_temp = preg_replace("/\s+/", " ", preg_replace("/\([^)]+\)/", "", trim(str_replace("Available interfaces: ", "", $iBuffer))));
 
         $vnstat_interfaces = explode(" ", $vnstat_temp);
         pclose($vnstatIF);
