@@ -26,9 +26,9 @@ function print_options() {
     foreach ($interface_list as $interface) {
         $i++;
         if ($i == count($interface_list)) {
-            echo "<a href=\"?i=" . $interface . "\">" . $interface . "</a>";
+            echo "<a href=\"?i=" . rawurlencode($interface) . "\">" . rawurlencode($interface) . "</a>";
         } else {
-            echo "<a href=\"?i=" . $interface . "\">" . $interface . ", </a>";
+            echo "<a href=\"?i=" . rawurlencode($interface) . "\">" . rawurlencode($interface) . ", </a>";
         }
     }
 }
@@ -36,7 +36,7 @@ function print_options() {
 $thisInterface = "";
 
 if (isset($_GET['i'])) {
-    $interfaceChosen = $_GET['i'];
+    $interfaceChosen = rawurldecode($_GET['i']);
     if (in_array($interfaceChosen, $interface_list, true)) {
         $thisInterface = $interfaceChosen;
     } else {
