@@ -2,13 +2,30 @@
 
 An adaptation of vnstat-php-frontend by bjd using Bootstrap written in PHP.
 
-### Features
+## Features
 * Hourly Statistics Chart (using Google Charts)
 * Daily & Monthly Statistics Overview
 * Top 10 Day Statistics
 * Automatically populated interface selection
 
-### Licensing
+
+## How to run it with Docker
+### Prerequisites
+* Docker should be installed:
+    * https://docs.docker.com/install/
+* `vnstat` should be installed:
+    * https://www.linuxbabe.com/monitoring/install-vnstat-debian-8ubuntu-16-04-server-monitor-network-traffic
+    * https://github.com/vergoh/vnstat
+
+### How to start it
+1. `docker-compose up -d`
+2. Open http://localhost/vnstat
+
+### How to stop it
+`docker-compose down`
+
+
+## Licensing
 Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
