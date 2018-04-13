@@ -25,7 +25,7 @@ error_reporting(E_ALL | E_NOTICE);
 $vnstat_config_format_hour = "ga";
 
 // Path of vnstat
-$vnstat_bin_dir = '/usr/local/bin/vnstat';
+$vnstat_bin_dir = '/usr/bin/vnstat';
 
 // Set to true to set your own interfaces
 $use_predefined_interfaces = false;

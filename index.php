@@ -79,7 +79,7 @@ if (isset($_GET['i'])) {
                         $outTraffic = $hourlyGraph[$i]['tx'];
                         $totalTraffic = $hourlyGraph[$i]['total'];
 
-                        if ($hourlyGraph[$i]['time'] == "0") {
+                        if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
                             continue;
                         }
 
@@ -228,6 +228,10 @@ if (isset($_GET['i'])) {
                                 $totalReceived = $hourly[$i]['rx'];
                                 $totalSent = $hourly[$i]['tx'];
                                 $totalTraffic = $hourly[$i]['total'];
+
+				if (($hourly[$i]['label'] == "12am") && ($hourly[$i]['time'] == "0")) {
+					continue;
+				}
                                 ?>
                                 <tr>
                                     <td><?php echo $hour; ?></td>
@@ -345,5 +349,11 @@ if (isset($_GET['i'])) {
                 </div>
             </div>
         </div>
+
+    <footer class="footer">
+      <div class="container">
+        <span class="text-muted">Copyright (C) 2016 Alexander Marston - <a href="https://github.com/alexandermarston/vnstat-dashboard">vnstat-dashboard</a></span>
+      </div>
+    </footer>
     </body>
 </html>
