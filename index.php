@@ -62,10 +62,14 @@ if (isset($_GET['i'])) {
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
         <script type="text/javascript">
-            google.charts.load('current', {'packages': ['bar']});
+
+            //google.charts.load('current', {'packages': ['bar','line']});
+            google.charts.load('current', {'packages': ['corechart','bar']});
             google.charts.setOnLoadCallback(drawHourlyChart);
             google.charts.setOnLoadCallback(drawDailyChart);
             google.charts.setOnLoadCallback(drawMonthlyChart);
+            google.charts.setOnLoadCallback(drawLiveChart);
+
 
             function drawHourlyChart() {
                 var data = google.visualization.arrayToDataTable([
@@ -169,6 +173,56 @@ if (isset($_GET['i'])) {
                 var chart = new google.charts.Bar(document.getElementById('monthlyNetworkTrafficGraph'));
                 chart.draw(data, google.charts.Bar.convertOptions(options));
             }
+
+            function drawLiveChart() {
+                var chart = new google.visualization.LineChart(document.getElementById('liveNetworkTrafficGraph'));
+                var options = {'title' : 'Live Network Traffic (<?php echo $thisInterface ?>)',
+                animation: {
+                    duration: 1000,
+                    easing: 'out',
+                    startup: true
+                },
+                hAxis: {
+                    title: 'Time'
+                },
+                vAxis: {
+                    title: 'Traffic'
+                },
+                height: 300
+                };
+
+                var data = new google.visualization.DataTable();
+                data.addColumn('datetime', 'Time');
+
+                data.addColumn('number', 'rx');
+                data.addColumn('number', 'tx');
+
+                var formatDate = new google.visualization.DateFormat({pattern: 'hh:mm:ss'});
+                var formatNumber = new google.visualization.NumberFormat({pattern: '#,##0.0'});
+
+                getTraffic();
+                setInterval(getTraffic, 5000);
+
+                function getTraffic() {
+                    $.ajax({ 
+                        url: "livetraffic.php", 
+                        method: 'GET',
+                        data: {i:'<?php echo $thisInterface ?>'},
+                        dataType: 'json', 
+                        success: drawChart 
+                    }); 
+                }
+
+                function drawChart(traffic) {
+                    var timestamp = new Date();                    
+                    data.addRow([timestamp, traffic.rx, traffic.tx]);
+                    formatDate.format(data, 0);
+                    formatNumber.format(data, 1);
+                    formatNumber.format(data, 2);
+                    chart.draw(data, options);
+                }
+            }
+
         </script>
     </head>
     <body>
@@ -183,6 +237,7 @@ if (isset($_GET['i'])) {
                 <li class="active"><a href="#hourlyGraph" data-toggle="tab">Hourly Graph</a></li>
                 <li><a href="#dailyGraph" data-toggle="tab">Daily Graph</a></li>
                 <li><a href="#monthlyGraph" data-toggle="tab">Monthly Graph</a></li>
+                <li><a href="#liveGraph" data-toggle="tab">Live Graph</a></li>
             </ul>
 
             <div class="tab-content">
@@ -197,6 +252,9 @@ if (isset($_GET['i'])) {
                 <div class="tab-pane" id="monthlyGraph">
                     <div id="monthlyNetworkTrafficGraph" style="height: 300px;"></div>
                 </div>
+                <div class="tab-pane" id="liveGraph">
+                    <div id="liveNetworkTrafficGraph" style="height: 300px;"></div>
+                </div>                
             </div>
         </div>
 
@@ -214,9 +272,9 @@ if (isset($_GET['i'])) {
                         <thead>
                             <tr>
                                 <th>Hour</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
+                                <th class="text-right">Received</th>
+                                <th class="text-right">Sent</th>
+                                <th class="text-right">Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -235,9 +293,9 @@ if (isset($_GET['i'])) {
                                 ?>
                                 <tr>
                                     <td><?php echo $hour; ?></td>
-                                    <td><?php echo $totalReceived; ?></td>
-                                    <td><?php echo $totalSent; ?></td>
-                                    <td><?php echo $totalTraffic; ?></td>
+                                    <td class="text-right"><?php echo $totalReceived; ?></td>
+                                    <td class="text-right"><?php echo $totalSent; ?></td>
+                                    <td class="text-right"><?php echo $totalTraffic; ?></td>
                                 </tr>
                             <?php
                             }
@@ -250,9 +308,9 @@ if (isset($_GET['i'])) {
                         <thead>
                             <tr>
                                 <th>Day</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
+                                <th class="text-right" >Received</th>
+                                <th class="text-right" >Sent</th>
+                                <th class="text-right" >Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -268,9 +326,9 @@ if (isset($_GET['i'])) {
                                     ?>
                                     <tr>
                                         <td><?php echo $day; ?></td>
-                                        <td><?php echo $totalReceived; ?></td>
-                                        <td><?php echo $totalSent; ?></td>
-                                        <td><?php echo $totalTraffic; ?></td>
+                                        <td class="text-right" ><?php echo $totalReceived; ?></td>
+                                        <td class="text-right" ><?php echo $totalSent; ?></td>
+                                        <td class="text-right" ><?php echo $totalTraffic; ?></td>
                                     </tr>
                             <?php
                                 }
@@ -284,9 +342,9 @@ if (isset($_GET['i'])) {
                         <thead>
                             <tr>
                                 <th>Month</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
+                                <th class="text-right" >Received</th>
+                                <th class="text-right" >Sent</th>
+                                <th class="text-right" >Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -302,9 +360,9 @@ if (isset($_GET['i'])) {
                                     ?>
                                     <tr>
                                         <td><?php echo $month; ?></td>
-                                        <td><?php echo $totalReceived; ?></td>
-                                        <td><?php echo $totalSent; ?></td>
-                                        <td><?php echo $totalTraffic; ?></td>
+                                        <td class="text-right" ><?php echo $totalReceived; ?></td>
+                                        <td class="text-right" ><?php echo $totalSent; ?></td>
+                                        <td class="text-right" ><?php echo $totalTraffic; ?></td>
                                     </tr>
                             <?php
                                 }
@@ -318,9 +376,9 @@ if (isset($_GET['i'])) {
                         <thead>
                             <tr>
                                 <th>Day</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
+                                <th class="text-right" >Received</th>
+                                <th class="text-right" >Sent</th>
+                                <th class="text-right" >Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -336,9 +394,9 @@ if (isset($_GET['i'])) {
                                     ?>
                                     <tr>
                                         <td><?php echo $day; ?></td>
-                                        <td><?php echo $totalReceived; ?></td>
-                                        <td><?php echo $totalSent; ?></td>
-                                        <td><?php echo $totalTraffic; ?></td>
+                                        <td class="text-right" ><?php echo $totalReceived; ?></td>
+                                        <td class="text-right" ><?php echo $totalSent; ?></td>
+                                        <td class="text-right" ><?php echo $totalTraffic; ?></td>
                                     </tr>
                             <?php
                                 }
