@@ -352,7 +352,7 @@ if (isset($_GET['i'])) {
 
     <footer class="footer">
       <div class="container">
-        <span class="text-muted">Copyright (C) 2016 Alexander Marston - <a href="https://github.com/alexandermarston/vnstat-dashboard">vnstat-dashboard</a></span>
+        <span class="text-muted">Copyright (C) <?php echo date("Y"); ?> Alexander Marston - <a href="https://github.com/alexandermarston/vnstat-dashboard">vnstat-dashboard</a></span>
       </div>
     </footer>
     </body>

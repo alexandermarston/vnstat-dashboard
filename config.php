@@ -19,6 +19,9 @@
 
 error_reporting(E_ALL | E_NOTICE);
 
+// Set the default system Timezone
+date_default_timezone_set('Europe/London');
+
 // date format: hourly
 // ga = 12-hour am/pm (ex. 11am)
 // H = 24-hour (ex. 23)
