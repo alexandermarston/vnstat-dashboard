@@ -1,4 +1,6 @@
 # vnstat-dashboard
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard?ref=badge_shield)
+
 
 An adaptation of vnstat-php-frontend by bjd using Bootstrap written in PHP.
 
@@ -40,3 +42,5 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard?ref=badge_large)
