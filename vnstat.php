@@ -84,20 +84,21 @@ function get_vnstat_data($path, $type, $interface) {
     
     $vnstat_information = array(); // Create an empty array for use later
 
-    $vnstatDS = popen("$path --dumpdb -i $interface", "r");
-    //$vnstatDS = fopen("dump.db", "r");
-    if (is_resource($vnstatDS)) {
-        $buffer = '';
-        while (!feof($vnstatDS)) {
-            $buffer .= fgets($vnstatDS);
+    $vnstatJSON = popen("$path --json -i $interface", "r");
+    $vnstatDecoded = "";
+
+    if (is_resource($vnstatJSON)) {
+        $iBuffer = '';
+        while (!feof($vnstatJSON)) {
+            $iBuffer .= fgets($vnstatJSON);
         }
-        $vnstat_information = explode("\n", $buffer);
-        pclose($vnstatDS);
+
+        $vnstatDecoded = $iBuffer;
+
+        pclose($vnstatJSON);
     }
 
-    if (isset($vnstat_information[0]) && strpos($vnstat_information[0], 'Error') !== false) {
-        return;
-    }
+    $vnstatDecoded = json_decode($vnstatDecoded, true);
 
     $hourlyGraph = array();
     $hourly = array();
@@ -107,70 +108,75 @@ function get_vnstat_data($path, $type, $interface) {
     $monthly = array();
     $top10 = array();
 
-    foreach ($vnstat_information as $vnstat_line) {
-        $data = explode(";", trim($vnstat_line));
-        switch ($data[0]) {
-            case "h": // Hourly
-                // Set-up the hourly graph data
-                $hourlyGraph[$data[1]]['time'] = $data[2];
-                $hourlyGraph[$data[1]]['label'] = date($vnstat_config_format_hour, ($data[2] - ($data[2] % 3600)));
-                $hourlyGraph[$data[1]]['rx'] = kbytes_to_string($data[3], true, $byte_formatter);
-                $hourlyGraph[$data[1]]['tx'] = kbytes_to_string($data[4], true, $byte_formatter);
-                $hourlyGraph[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4], true, $byte_formatter);
-                $hourlyGraph[$data[1]]['totalUnformatted'] = ($data[3] + $data[4]);
-                $hourlyGraph[$data[1]]['act'] = 1;
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['tops'] as $top) {
+        if (is_array($top)) {
+            ++$i;
 
-                // Set up the hourly table data
-                $hourly[$data[1]]['time'] = $data[2];
-                $hourly[$data[1]]['label'] = date($vnstat_config_format_hour, ($data[2] - ($data[2] % 3600)));
-                $hourly[$data[1]]['rx'] = kbytes_to_string($data[3]);
-                $hourly[$data[1]]['tx'] = kbytes_to_string($data[4]);
-                $hourly[$data[1]]['total'] = kbytes_to_string($data[3] + $data[4]);
-                $hourly[$data[1]]['act'] = 1;
-                break;
-            case "d": // Daily
-                // Set-up the daily graph data
-                $dailyGraph[$data[1]]['time'] = $data[2];
-                $dailyGraph[$data[1]]['label'] = date("jS", $data[2]);
-                $dailyGraph[$data[1]]['rx'] = kbytes_to_string(($data[3] * 1024 + $data[5]), true, $byte_formatter);
-                $dailyGraph[$data[1]]['tx'] = kbytes_to_string(($data[4] * 1024 + $data[6]), true, $byte_formatter);
-                $dailyGraph[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]), true, $byte_formatter);
-                $dailyGraph[$data[1]]['totalUnformatted'] = (($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
-                $dailyGraph[$data[1]]['act'] = 1;
-                
-                $daily[$data[1]]['time'] = $data[2];
-                $daily[$data[1]]['label'] = date("d/m/Y", $data[2]);
-                $daily[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
-                $daily[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
-                $daily[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
-                $daily[$data[1]]['act'] = $data[7];
-                break;
-            case "m": // Monthly
-                // Set-up the monthly graph data
-                $monthlyGraph[$data[1]]['time'] = $data[2];
-                $monthlyGraph[$data[1]]['label'] = date("F", ($data[2] - ($data[2] % 3600)));
-                $monthlyGraph[$data[1]]['rx'] = kbytes_to_string(($data[3] * 1024 + $data[5]), true, $byte_formatter);
-                $monthlyGraph[$data[1]]['tx'] = kbytes_to_string(($data[4] * 1024 + $data[6]), true, $byte_formatter);
-                $monthlyGraph[$data[1]]['total'] = kbytes_to_string((($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6])), true, $byte_formatter);
-                $monthlyGraph[$data[1]]['totalUnformatted'] = ($data[3] + $data[4]);
-                $monthlyGraph[$data[1]]['act'] = 1;
-                
-                $monthly[$data[1]]['time'] = $data[2];
-                $monthly[$data[1]]['label'] = date("F", $data[2]);
-                $monthly[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
-                $monthly[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
-                $monthly[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
-                $monthly[$data[1]]['act'] = $data[7];
-                break;
-            case "t": // Top 10
-                $top10[$data[1]]['time'] = $data[2];
-                $top10[$data[1]]['label'] = date("d/m/Y", $data[2]);
-                $top10[$data[1]]['rx'] = kbytes_to_string($data[3] * 1024 + $data[5]);
-                $top10[$data[1]]['tx'] = kbytes_to_string($data[4] * 1024 + $data[6]);
-                $top10[$data[1]]['totalraw'] = (($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
-                $top10[$data[1]]['total'] = kbytes_to_string(($data[3] * 1024 + $data[5]) + ($data[4] * 1024 + $data[6]));
-                $top10[$data[1]]['act'] = $data[7];
-                break;
+            $top10[$i]['label'] = date('d/m/Y', strtotime($top['date']['month'] . "/" . $top['date']['day'] . "/" . $top['date']['year']));
+            $top10[$i]['rx'] = kbytes_to_string($top['rx']);
+            $top10[$i]['tx'] = kbytes_to_string($top['tx']);
+            $top10[$i]['totalraw'] = ($top['rx'] + $top['tx']);
+            $top10[$i]['total'] = kbytes_to_string($top['rx'] + $top['tx']);
+        }
+    }
+
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['days'] as $day) {
+        if (is_array($day)) {
+            ++$i;
+
+            $daily[$i]['label'] = date('d/m/Y', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
+            $daily[$i]['rx'] = kbytes_to_string($day['rx']);
+            $daily[$i]['tx'] = kbytes_to_string($day['tx']);
+            $daily[$i]['totalraw'] = ($day['rx'] + $day['tx']);
+            $daily[$i]['total'] = kbytes_to_string($day['rx'] + $day['tx']);
+            $daily[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
+
+            $dailyGraph[$i]['label'] = date('jS', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
+            $dailyGraph[$i]['rx'] = kbytes_to_string($day['rx'], true, $byte_formatter);
+            $dailyGraph[$i]['tx'] = kbytes_to_string($day['tx'], true, $byte_formatter);
+            $dailyGraph[$i]['total'] = kbytes_to_string(($day['rx'] + $day['tx']), true, $byte_formatter);
+            $dailyGraph[$i]['totalraw'] = ($day['rx'] + $day['tx']);
+            $dailyGraph[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
+        }
+    }
+
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['hours'] as $hour) {
+        if (is_array($hour)) {
+            ++$i;
+
+            $hourly[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
+            $hourly[$i]['rx'] = kbytes_to_string($hour['rx']);
+            $hourly[$i]['tx'] = kbytes_to_string($hour['tx']);
+            $hourly[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
+            $hourly[$i]['total'] = kbytes_to_string($hour['rx'] + $hour['tx']);
+            $hourly[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
+
+            $hourlyGraph[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
+            $hourlyGraph[$i]['rx'] = kbytes_to_string($hour['rx'], true, $byte_formatter);
+            $hourlyGraph[$i]['tx'] = kbytes_to_string($hour['tx'], true, $byte_formatter);
+            $hourlyGraph[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
+            $hourlyGraph[$i]['total'] = kbytes_to_string(($hour['rx'] + $hour['tx']), true, $byte_formatter);
+            $hourlyGraph[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
+        }
+    }
+
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['months'] as $month) {
+        if (is_array($month)) {
+            ++$i;
+
+            $monthly[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
+            $monthly[$i]['rx'] = kbytes_to_string($month['rx']);
+            $monthly[$i]['tx'] = kbytes_to_string($month['tx']);
+            $monthly[$i]['totalraw'] = ($month['rx'] + $month['tx']);
+            $monthly[$i]['total'] = kbytes_to_string($month['rx'] + $month['tx']);
+            $monthly[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
+
+            $monthlyGraph[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
+            $monthlyGraph[$i]['rx'] = kbytes_to_string($month['rx'], true, $byte_formatter);
+            $monthlyGraph[$i]['tx'] = kbytes_to_string($month['tx'], true, $byte_formatter);
+            $monthlyGraph[$i]['totalraw'] = ($month['rx'] + $month['tx']);
+            $monthlyGraph[$i]['total'] = kbytes_to_string(($month['rx'] + $month['tx']), true, $byte_formatter);
+            $monthlyGraph[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
         }
     }
 

@@ -147,10 +147,6 @@ if (isset($_GET['i'])) {
                         $outTraffic = $monthlyGraph[$i]['tx'];
                         $totalTraffic = $monthlyGraph[$i]['total'];
 
-                        if ($monthlyGraph[$i]['time'] == "0") {
-                            continue;
-                        }
-
                         if ($i == 23) {
                             echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
                         } else {
@@ -229,9 +225,6 @@ if (isset($_GET['i'])) {
                                 $totalSent = $hourly[$i]['tx'];
                                 $totalTraffic = $hourly[$i]['total'];
 
-				if (($hourly[$i]['label'] == "12am") && ($hourly[$i]['time'] == "0")) {
-					continue;
-				}
                                 ?>
                                 <tr>
                                     <td><?php echo $hour; ?></td>
@@ -260,12 +253,11 @@ if (isset($_GET['i'])) {
                             $daily = get_vnstat_data($vnstat_bin_dir, "daily", $thisInterface);
 
                             for ($i = 0; $i < count($daily); $i++) {
-                                if ($daily[$i]['act'] == 1) {
-                                    $day = $daily[$i]['label'];
-                                    $totalReceived = $daily[$i]['rx'];
-                                    $totalSent = $daily[$i]['tx'];
-                                    $totalTraffic = $daily[$i]['total'];
-                                    ?>
+                                $day = $daily[$i]['label'];
+                                $totalReceived = $daily[$i]['rx'];
+                                $totalSent = $daily[$i]['tx'];
+                                $totalTraffic = $daily[$i]['total'];
+                            ?>
                                     <tr>
                                         <td><?php echo $day; ?></td>
                                         <td><?php echo $totalReceived; ?></td>
@@ -273,7 +265,6 @@ if (isset($_GET['i'])) {
                                         <td><?php echo $totalTraffic; ?></td>
                                     </tr>
                             <?php
-                                }
                             }
                             ?>
                         </tbody>
@@ -294,12 +285,11 @@ if (isset($_GET['i'])) {
                             $monthly = get_vnstat_data($vnstat_bin_dir, "monthly", $thisInterface);
 
                             for ($i = 0; $i < count($monthly); $i++) {
-                                if ($monthly[$i]['act'] == 1) {
-                                    $month = $monthly[$i]['label'];
-                                    $totalReceived = $monthly[$i]['rx'];
-                                    $totalSent = $monthly[$i]['tx'];
-                                    $totalTraffic = $monthly[$i]['total'];
-                                    ?>
+                                $month = $monthly[$i]['label'];
+                                $totalReceived = $monthly[$i]['rx'];
+                                $totalSent = $monthly[$i]['tx'];
+                                $totalTraffic = $monthly[$i]['total'];
+                            ?>
                                     <tr>
                                         <td><?php echo $month; ?></td>
                                         <td><?php echo $totalReceived; ?></td>
@@ -307,7 +297,6 @@ if (isset($_GET['i'])) {
                                         <td><?php echo $totalTraffic; ?></td>
                                     </tr>
                             <?php
-                                }
                             }
                             ?>
                         </tbody>
@@ -328,12 +317,11 @@ if (isset($_GET['i'])) {
                             $top10 = get_vnstat_data($vnstat_bin_dir, "top10", $thisInterface);
 
                             for ($i = 0; $i < count($top10); $i++) {
-                                if ($top10[$i]['act'] == 1) {
-                                    $day = $top10[$i]['label'];
-                                    $totalReceived = $top10[$i]['rx'];
-                                    $totalSent = $top10[$i]['tx'];
-                                    $totalTraffic = $top10[$i]['total'];
-                                    ?>
+                                $day = $top10[$i]['label'];
+                                $totalReceived = $top10[$i]['rx'];
+                                $totalSent = $top10[$i]['tx'];
+                                $totalTraffic = $top10[$i]['total'];
+                            ?>
                                     <tr>
                                         <td><?php echo $day; ?></td>
                                         <td><?php echo $totalReceived; ?></td>
@@ -341,7 +329,6 @@ if (isset($_GET['i'])) {
                                         <td><?php echo $totalTraffic; ?></td>
                                     </tr>
                             <?php
-                                }
                             }
                             ?>
                         </tbody>
