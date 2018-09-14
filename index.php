@@ -73,11 +73,14 @@ if (isset($_GET['i'])) {
                     <?php
                     $hourlyGraph = get_vnstat_data($vnstat_bin_dir, "hourlyGraph", $thisInterface);
 
+                    $hourlyLargestValue = get_largest_value($hourlyGraph);
+                    $hourlyLargestPrefix = get_largest_prefix($hourlyLargestValue);
+
                     for ($i = 0; $i < count($hourlyGraph); $i++) {
                         $hour = $hourlyGraph[$i]['label'];
-                        $inTraffic = $hourlyGraph[$i]['rx'];
-                        $outTraffic = $hourlyGraph[$i]['tx'];
-                        $totalTraffic = $hourlyGraph[$i]['total'];
+                        $inTraffic = kbytes_to_string($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
+                        $outTraffic = kbytes_to_string($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
+                        $totalTraffic = kbytes_to_string($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
 
                         if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
                             continue;
@@ -95,7 +98,7 @@ if (isset($_GET['i'])) {
                 var options = {
                     title: 'Hourly Network Traffic',
                     subtitle: 'over last 24 hours',
-                    vAxis: {format: '##.## <?php echo $byte_formatter; ?>'}
+                    vAxis: {format: '##.## <?php echo $hourlyLargestPrefix; ?>'}
                 };
 
                 var chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
@@ -107,11 +110,14 @@ if (isset($_GET['i'])) {
                     <?php
                     $dailyGraph = get_vnstat_data($vnstat_bin_dir, "dailyGraph", $thisInterface);
 
+                    $dailyLargestValue = get_largest_value($dailyGraph);
+                    $dailyLargestPrefix = get_largest_prefix($dailyLargestValue);
+
                     for ($i = 0; $i < count($dailyGraph); $i++) {
                         $day = $dailyGraph[$i]['label'];
-                        $inTraffic = $dailyGraph[$i]['rx'];
-                        $outTraffic = $dailyGraph[$i]['tx'];
-                        $totalTraffic = $dailyGraph[$i]['total'];
+                        $inTraffic = kbytes_to_string($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
+                        $outTraffic = kbytes_to_string($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
+                        $totalTraffic = kbytes_to_string($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
 
                         if ($dailyGraph[$i]['time'] == "0") {
                             continue;
@@ -129,7 +135,7 @@ if (isset($_GET['i'])) {
                 var options = {
                     title: 'Daily Network Traffic',
                     subtitle: 'over last 29 days (most recent first)',
-                    vAxis: {format: '##.## <?php echo $byte_formatter; ?>'}
+                    vAxis: {format: '##.## <?php echo $dailyLargestPrefix; ?>'}
                 };
 
                 var chart = new google.charts.Bar(document.getElementById('dailyNetworkTrafficGraph'));
@@ -141,11 +147,14 @@ if (isset($_GET['i'])) {
                     <?php
                     $monthlyGraph = get_vnstat_data($vnstat_bin_dir, "monthlyGraph", $thisInterface);
 
+                    $monthlyLargestValue = get_largest_value($monthlyGraph);
+                    $monthlyLargestPrefix = get_largest_prefix($monthlyLargestValue);
+
                     for ($i = 0; $i < count($monthlyGraph); $i++) {
                         $hour = $monthlyGraph[$i]['label'];
-                        $inTraffic = $monthlyGraph[$i]['rx'];
-                        $outTraffic = $monthlyGraph[$i]['tx'];
-                        $totalTraffic = $monthlyGraph[$i]['total'];
+                        $inTraffic = kbytes_to_string($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
+                        $outTraffic = kbytes_to_string($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
+                        $totalTraffic = kbytes_to_string($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
 
                         if ($i == 23) {
                             echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
@@ -159,7 +168,7 @@ if (isset($_GET['i'])) {
                 var options = {
                     title: 'Monthly Network Traffic',
                     subtitle: 'over last 12 months',
-                    vAxis: {format: '##.## <?php echo $byte_formatter; ?>'}
+                    vAxis: {format: '##.## <?php echo $monthlyLargestPrefix; ?>'}
                 };
 
                 var chart = new google.charts.Bar(document.getElementById('monthlyNetworkTrafficGraph'));

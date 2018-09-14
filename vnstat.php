@@ -62,7 +62,7 @@ function get_vnstat_interfaces($path) {
 
 function get_largest_value($array) {
     return $max = array_reduce($array, function($a, $b) {
-        return $a > $b['totalUnformatted'] ? $a : $b['totalUnformatted'];
+        return $a > $b['total'] ? $a : $b['total'];
     });
 }
 
@@ -132,10 +132,9 @@ function get_vnstat_data($path, $type, $interface) {
             $daily[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
 
             $dailyGraph[$i]['label'] = date('jS', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
-            $dailyGraph[$i]['rx'] = kbytes_to_string($day['rx'], true, $byte_formatter);
-            $dailyGraph[$i]['tx'] = kbytes_to_string($day['tx'], true, $byte_formatter);
-            $dailyGraph[$i]['total'] = kbytes_to_string(($day['rx'] + $day['tx']), true, $byte_formatter);
-            $dailyGraph[$i]['totalraw'] = ($day['rx'] + $day['tx']);
+            $dailyGraph[$i]['rx'] = $day['rx'];
+            $dailyGraph[$i]['tx'] = $day['tx'];
+            $dailyGraph[$i]['total'] = ($day['rx'] + $day['tx']);
             $dailyGraph[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
         }
     }
@@ -152,10 +151,9 @@ function get_vnstat_data($path, $type, $interface) {
             $hourly[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
 
             $hourlyGraph[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
-            $hourlyGraph[$i]['rx'] = kbytes_to_string($hour['rx'], true, $byte_formatter);
-            $hourlyGraph[$i]['tx'] = kbytes_to_string($hour['tx'], true, $byte_formatter);
-            $hourlyGraph[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
-            $hourlyGraph[$i]['total'] = kbytes_to_string(($hour['rx'] + $hour['tx']), true, $byte_formatter);
+            $hourlyGraph[$i]['rx'] = $hour['rx'];
+            $hourlyGraph[$i]['tx'] = $hour['tx'];
+            $hourlyGraph[$i]['total'] = ($hour['rx'] + $hour['tx']);
             $hourlyGraph[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
         }
     }
@@ -172,10 +170,9 @@ function get_vnstat_data($path, $type, $interface) {
             $monthly[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
 
             $monthlyGraph[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
-            $monthlyGraph[$i]['rx'] = kbytes_to_string($month['rx'], true, $byte_formatter);
-            $monthlyGraph[$i]['tx'] = kbytes_to_string($month['tx'], true, $byte_formatter);
-            $monthlyGraph[$i]['totalraw'] = ($month['rx'] + $month['tx']);
-            $monthlyGraph[$i]['total'] = kbytes_to_string(($month['rx'] + $month['tx']), true, $byte_formatter);
+            $monthlyGraph[$i]['rx'] = $month['rx'];
+            $monthlyGraph[$i]['tx'] = $month['tx'];
+            $monthlyGraph[$i]['total'] = ($month['rx'] + $month['tx']);
             $monthlyGraph[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
         }
     }
