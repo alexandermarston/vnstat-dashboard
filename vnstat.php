@@ -179,12 +179,12 @@ function get_vnstat_data($path, $type, $interface) {
 
     usort($hourlyGraph, function ($item1, $item2) {
         if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] < $item2['time'] ? -1 : 1;
+        return $item1['time'] > $item2['time'] ? -1 : 1;
     });
 
     usort($hourly, function ($item1, $item2) {
         if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] < $item2['time'] ? -1 : 1;
+        return $item1['time'] > $item2['time'] ? -1 : 1;
     });
     
     usort($dailyGraph, function ($item1, $item2) {
