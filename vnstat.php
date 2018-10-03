@@ -22,7 +22,7 @@ function kbytes_to_string($kb, $wSuf = false, $byte_notation = null) {
     $units = array('TB', 'GB', 'MB', 'KB');
     $scale = 1024 * 1024 * 1024;
     $ui = 0;
-    
+
     $custom_size = isset($byte_notation) && in_array($byte_notation, $units);
 
     while ((($kb < $scale) && ($scale > 1)) || $custom_size) {
@@ -81,7 +81,7 @@ function get_largest_prefix($kb) {
 
 function get_vnstat_data($path, $type, $interface) {
     global $byte_formatter, $vnstat_config_format_hour;
-    
+
     $vnstat_information = array(); // Create an empty array for use later
 
     $vnstatJSON = popen("$path --json -i $interface", "r");
@@ -177,40 +177,20 @@ function get_vnstat_data($path, $type, $interface) {
         }
     }
 
-    usort($hourlyGraph, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
+    $time_sort_callback=function ($item1, $item2){
+        return $item1['time'] <=> $item2['time'];
+    };
 
-    usort($hourly, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-    
-    usort($dailyGraph, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-
-    usort($daily, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-    
-    usort($monthlyGraph, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-
-    usort($monthly, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
+    usort($hourlyGraph, $time_sort_callback);
+    usort($hourly, $time_sort_callback);
+    usort($dailyGraph, $time_sort_callback);
+    usort($daily, $time_sort_callback);
+    usort($monthlyGraph, $time_sort_callback);
+    usort($monthly, $time_sort_callback);
 
     // Sort Top 10 Days by Highest Total Usage first
     usort($top10, function ($item1, $item2) {
-        if ($item1['totalraw'] == $item2['totalraw']) return 0;
-        return $item1['totalraw'] > $item2['totalraw'] ? -1 : 1;
+        return $item1['totalraw'] <=> $item2['totalraw'];
     });
 
     switch ($type) {
@@ -230,4 +210,3 @@ function get_vnstat_data($path, $type, $interface) {
             return $top10;
     }
 }
-?>
