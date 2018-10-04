@@ -19,7 +19,8 @@
 require('vnstat.php'); // The vnstat information parser
 require('config.php'); // Include all the configuration information
 
-function print_options() {
+function printOptions()
+{
     global $interface_list;
 
     $i = 0;
@@ -31,6 +32,36 @@ function print_options() {
             echo "<a href=\"?i=" . rawurlencode($interface) . "\">" . rawurlencode($interface) . ", </a>";
         }
     }
+}
+
+function printTableStats($path, $type, $interface, $label)
+{
+    echo '<table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>' . $label . '</th>
+            <th>Received</th>
+            <th>Sent</th>
+            <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>';
+    $data = getVnstatData($path, $type, $interface);
+
+    for ($i = 0; $i < count($data); $i++) {
+        $label = $data[$i]['label'];
+        $totalReceived = $data[$i]['rx'];
+        $totalSent = $data[$i]['tx'];
+        $totalTraffic = $data[$i]['total'];
+        echo '<tr>';
+        echo '<td>' . $label . '</td>';
+        echo '<td>' . $totalReceived . '</td>';
+        echo '<td>' . $totalSent . '</td>';
+        echo '<td>' . $totalTraffic . '</td>';
+        echo '</tr>';
+
+    }
+    echo '</tbody></table>';
 }
 
 $thisInterface = "";
@@ -49,307 +80,196 @@ if (isset($_GET['i'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Network Traffic</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+    <title>Network Traffic</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-        <link rel="stylesheet" href="css/style.css">
-        
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-        <script type="text/javascript">
-            google.charts.load('current', {'packages': ['bar']});
-            google.charts.setOnLoadCallback(drawHourlyChart);
-            google.charts.setOnLoadCallback(drawDailyChart);
-            google.charts.setOnLoadCallback(drawMonthlyChart);
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
 
-            function drawHourlyChart() {
-                var data = google.visualization.arrayToDataTable([
-                    ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
-                    <?php
-                    $hourlyGraph = get_vnstat_data($vnstat_bin_dir, "hourlyGraph", $thisInterface);
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['bar']});
+        google.charts.setOnLoadCallback(drawHourlyChart);
+        google.charts.setOnLoadCallback(drawDailyChart);
+        google.charts.setOnLoadCallback(drawMonthlyChart);
 
-                    $hourlyLargestValue = get_largest_value($hourlyGraph);
-                    $hourlyLargestPrefix = get_largest_prefix($hourlyLargestValue);
+        function drawHourlyChart()
+        {
+            let data = google.visualization.arrayToDataTable([
+                ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                <?php
+                $hourlyGraph = getVnstatData($vnstat_bin_dir, "hourlyGraph", $thisInterface);
 
-                    for ($i = 0; $i < count($hourlyGraph); $i++) {
-                        $hour = $hourlyGraph[$i]['label'];
-                        $inTraffic = kbytes_to_string($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
-                        $outTraffic = kbytes_to_string($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
-                        $totalTraffic = kbytes_to_string($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
+                $hourlyLargestValue = getLargestValue($hourlyGraph);
+                $hourlyLargestPrefix = getLargestPrefix($hourlyLargestValue);
 
-                        if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
-                            continue;
-                        }
+                for ($i = 0; $i < count($hourlyGraph); $i++) {
+                    $hour = $hourlyGraph[$i]['label'];
+                    $inTraffic = kbytesToString($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
+                    $outTraffic = kbytesToString($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
+                    $totalTraffic = kbytesToString($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
 
-                        if ($i == 23) {
-                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
-                        } else {
-                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
-                        }
+                    if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
+                        continue;
                     }
-                    ?>
-                ]);
 
-                var options = {
-                    title: 'Hourly Network Traffic',
-                    subtitle: 'over last 24 hours',
-                    vAxis: {format: '##.## <?php echo $hourlyLargestPrefix; ?>'}
-                };
-
-                var chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
-                chart.draw(data, google.charts.Bar.convertOptions(options));
-            }
-            function drawDailyChart() {
-                var data = google.visualization.arrayToDataTable([
-                    ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
-                    <?php
-                    $dailyGraph = get_vnstat_data($vnstat_bin_dir, "dailyGraph", $thisInterface);
-
-                    $dailyLargestValue = get_largest_value($dailyGraph);
-                    $dailyLargestPrefix = get_largest_prefix($dailyLargestValue);
-
-                    for ($i = 0; $i < count($dailyGraph); $i++) {
-                        $day = $dailyGraph[$i]['label'];
-                        $inTraffic = kbytes_to_string($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
-                        $outTraffic = kbytes_to_string($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
-                        $totalTraffic = kbytes_to_string($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
-
-                        if ($dailyGraph[$i]['time'] == "0") {
-                            continue;
-                        }
-
-                        if ($i == 29) {
-                            echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
-                        } else {
-                            echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
-                        }
+                    if ($i == 23) {
+                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+                    } else {
+                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                     }
-                    ?>
-                ]);
+                }
+                ?>
+            ]);
 
-                var options = {
-                    title: 'Daily Network Traffic',
-                    subtitle: 'over last 29 days (most recent first)',
-                    vAxis: {format: '##.## <?php echo $dailyLargestPrefix; ?>'}
-                };
+            let options = {
+                title: 'Hourly Network Traffic',
+                subtitle: 'over last 24 hours',
+                vAxis: {format: '##.## <?php echo $hourlyLargestPrefix; ?>'}
+            };
 
-                var chart = new google.charts.Bar(document.getElementById('dailyNetworkTrafficGraph'));
-                chart.draw(data, google.charts.Bar.convertOptions(options));
-            }
-            function drawMonthlyChart() {
-                var data = google.visualization.arrayToDataTable([
-                    ['Month', 'Traffic In', 'Traffic Out', 'Total Traffic'],
-                    <?php
-                    $monthlyGraph = get_vnstat_data($vnstat_bin_dir, "monthlyGraph", $thisInterface);
+            let chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+        }
 
-                    $monthlyLargestValue = get_largest_value($monthlyGraph);
-                    $monthlyLargestPrefix = get_largest_prefix($monthlyLargestValue);
+        function drawDailyChart()
+        {
+            let data = google.visualization.arrayToDataTable([
+                ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                <?php
+                $dailyGraph = getVnstatData($vnstat_bin_dir, "dailyGraph", $thisInterface);
 
-                    for ($i = 0; $i < count($monthlyGraph); $i++) {
-                        $hour = $monthlyGraph[$i]['label'];
-                        $inTraffic = kbytes_to_string($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
-                        $outTraffic = kbytes_to_string($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
-                        $totalTraffic = kbytes_to_string($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
+                $dailyLargestValue = getLargestValue($dailyGraph);
+                $dailyLargestPrefix = getLargestPrefix($dailyLargestValue);
 
-                        if ($i == 23) {
-                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
-                        } else {
-                            echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
-                        }
+                for ($i = 0; $i < count($dailyGraph); $i++) {
+                    $day = $dailyGraph[$i]['label'];
+                    $inTraffic = kbytesToString($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
+                    $outTraffic = kbytesToString($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
+                    $totalTraffic = kbytesToString($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
+
+                    if ($dailyGraph[$i]['time'] == "0") {
+                        continue;
                     }
-                    ?>
-                ]);
 
-                var options = {
-                    title: 'Monthly Network Traffic',
-                    subtitle: 'over last 12 months',
-                    vAxis: {format: '##.## <?php echo $monthlyLargestPrefix; ?>'}
-                };
+                    if ($i == 29) {
+                        echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+                    } else {
+                        echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
+                    }
+                }
+                ?>
+            ]);
 
-                var chart = new google.charts.Bar(document.getElementById('monthlyNetworkTrafficGraph'));
-                chart.draw(data, google.charts.Bar.convertOptions(options));
-            }
-        </script>
-    </head>
-    <body>
-        <div class="container">
-            <div class="page-header">
-                <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php print_options(); ?>
-            </div>
+            let options = {
+                title: 'Daily Network Traffic',
+                subtitle: 'over last 29 days (most recent first)',
+                vAxis: {format: '##.## <?php echo $dailyLargestPrefix; ?>'}
+            };
+
+            let chart = new google.charts.Bar(document.getElementById('dailyNetworkTrafficGraph'));
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+        }
+
+        function drawMonthlyChart()
+        {
+            let data = google.visualization.arrayToDataTable([
+                ['Month', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                <?php
+                $monthlyGraph = getVnstatData($vnstat_bin_dir, "monthlyGraph", $thisInterface);
+
+                $monthlyLargestValue = getLargestValue($monthlyGraph);
+                $monthlyLargestPrefix = getLargestPrefix($monthlyLargestValue);
+
+                for ($i = 0; $i < count($monthlyGraph); $i++) {
+                    $hour = $monthlyGraph[$i]['label'];
+                    $inTraffic = kbytesToString($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
+                    $outTraffic = kbytesToString($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
+                    $totalTraffic = kbytesToString($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
+
+                    if ($i == 23) {
+                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+                    } else {
+                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
+                    }
+                }
+                ?>
+            ]);
+
+            let options = {
+                title: 'Monthly Network Traffic',
+                subtitle: 'over last 12 months',
+                vAxis: {format: '##.## <?php echo $monthlyLargestPrefix; ?>'}
+            };
+
+            let chart = new google.charts.Bar(document.getElementById('monthlyNetworkTrafficGraph'));
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php printOptions(); ?>
+    </div>
+</div>
+
+<div id="graphTabNav" class="container">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#hourlyGraph" data-toggle="tab">Hourly Graph</a></li>
+        <li><a href="#dailyGraph" data-toggle="tab">Daily Graph</a></li>
+        <li><a href="#monthlyGraph" data-toggle="tab">Monthly Graph</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="hourlyGraph">
+            <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
         </div>
 
-        <div id="graphTabNav" class="container">
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="#hourlyGraph" data-toggle="tab">Hourly Graph</a></li>
-                <li><a href="#dailyGraph" data-toggle="tab">Daily Graph</a></li>
-                <li><a href="#monthlyGraph" data-toggle="tab">Monthly Graph</a></li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane active" id="hourlyGraph">
-                    <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
-                </div>
-
-                <div class="tab-pane" id="dailyGraph">
-                    <div id="dailyNetworkTrafficGraph" style="height: 300px;"></div>
-                </div>
-
-                <div class="tab-pane" id="monthlyGraph">
-                    <div id="monthlyNetworkTrafficGraph" style="height: 300px;"></div>
-                </div>
-            </div>
+        <div class="tab-pane" id="dailyGraph">
+            <div id="dailyNetworkTrafficGraph" style="height: 300px;"></div>
         </div>
 
-        <div id="tabNav" class="container">
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="#hourly" data-toggle="tab">Hourly</a></li>
-                <li><a href="#daily" data-toggle="tab">Daily</a></li>
-                <li><a href="#monthly" data-toggle="tab">Monthly</a></li>
-                <li><a href="#top10" data-toggle="tab">Top 10</a></li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane active" id="hourly">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Hour</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $hourly = get_vnstat_data($vnstat_bin_dir, "hourly", $thisInterface);
-
-                            for ($i = 0; $i < count($hourly); $i++) {
-                                $hour = $hourly[$i]['label'];
-                                $totalReceived = $hourly[$i]['rx'];
-                                $totalSent = $hourly[$i]['tx'];
-                                $totalTraffic = $hourly[$i]['total'];
-
-                                ?>
-                                <tr>
-                                    <td><?php echo $hour; ?></td>
-                                    <td><?php echo $totalReceived; ?></td>
-                                    <td><?php echo $totalSent; ?></td>
-                                    <td><?php echo $totalTraffic; ?></td>
-                                </tr>
-                            <?php
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="tab-pane" id="daily">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Day</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $daily = get_vnstat_data($vnstat_bin_dir, "daily", $thisInterface);
-
-                            for ($i = 0; $i < count($daily); $i++) {
-                                $day = $daily[$i]['label'];
-                                $totalReceived = $daily[$i]['rx'];
-                                $totalSent = $daily[$i]['tx'];
-                                $totalTraffic = $daily[$i]['total'];
-                            ?>
-                                    <tr>
-                                        <td><?php echo $day; ?></td>
-                                        <td><?php echo $totalReceived; ?></td>
-                                        <td><?php echo $totalSent; ?></td>
-                                        <td><?php echo $totalTraffic; ?></td>
-                                    </tr>
-                            <?php
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="tab-pane" id="monthly">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $monthly = get_vnstat_data($vnstat_bin_dir, "monthly", $thisInterface);
-
-                            for ($i = 0; $i < count($monthly); $i++) {
-                                $month = $monthly[$i]['label'];
-                                $totalReceived = $monthly[$i]['rx'];
-                                $totalSent = $monthly[$i]['tx'];
-                                $totalTraffic = $monthly[$i]['total'];
-                            ?>
-                                    <tr>
-                                        <td><?php echo $month; ?></td>
-                                        <td><?php echo $totalReceived; ?></td>
-                                        <td><?php echo $totalSent; ?></td>
-                                        <td><?php echo $totalTraffic; ?></td>
-                                    </tr>
-                            <?php
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="tab-pane" id="top10">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Day</th>
-                                <th>Received</th>
-                                <th>Sent</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $top10 = get_vnstat_data($vnstat_bin_dir, "top10", $thisInterface);
-
-                            for ($i = 0; $i < count($top10); $i++) {
-                                $day = $top10[$i]['label'];
-                                $totalReceived = $top10[$i]['rx'];
-                                $totalSent = $top10[$i]['tx'];
-                                $totalTraffic = $top10[$i]['total'];
-                            ?>
-                                    <tr>
-                                        <td><?php echo $day; ?></td>
-                                        <td><?php echo $totalReceived; ?></td>
-                                        <td><?php echo $totalSent; ?></td>
-                                        <td><?php echo $totalTraffic; ?></td>
-                                    </tr>
-                            <?php
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="tab-pane" id="monthlyGraph">
+            <div id="monthlyNetworkTrafficGraph" style="height: 300px;"></div>
         </div>
+    </div>
+</div>
 
-        <footer class="footer">
-            <div class="container">
-                <span class="text-muted">Copyright (C) <?php echo date("Y"); ?> Alexander Marston - <a href="https://github.com/alexandermarston/vnstat-dashboard">vnstat-dashboard</a></span>
-            </div>
-        </footer>
-    </body>
+<div id="tabNav" class="container">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#hourly" data-toggle="tab">Hourly</a></li>
+        <li><a href="#daily" data-toggle="tab">Daily</a></li>
+        <li><a href="#monthly" data-toggle="tab">Monthly</a></li>
+        <li><a href="#top10" data-toggle="tab">Top 10</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="hourly">
+            <?php printTableStats($vnstat_bin_dir, "hourly", $thisInterface, 'hour') ?>
+        </div>
+        <div class="tab-pane" id="daily">
+            <?php printTableStats($vnstat_bin_dir, "daily", $thisInterface, 'Day') ?>
+        </div>
+        <div class="tab-pane" id="monthly">
+            <?php printTableStats($vnstat_bin_dir, "monthly", $thisInterface, 'Month') ?>
+        </div>
+        <div class="tab-pane" id="top10">
+            <?php printTableStats($vnstat_bin_dir, "top10", $thisInterface, 'Day') ?>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <span class="text-muted">Copyright (C) <?php echo date("Y"); ?> Alexander Marston -
+            <a href="https://github.com/alexandermarston/vnstat-dashboard">vnstat-dashboard</a></span>
+    </div>
+</footer>
+</body>
 </html>
