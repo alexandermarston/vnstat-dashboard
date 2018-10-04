@@ -80,8 +80,6 @@ function get_largest_prefix($kb) {
 }
 
 function get_vnstat_data($path, $type, $interface) {
-    global $byte_formatter, $vnstat_config_format_hour;
-    
     $vnstat_information = array(); // Create an empty array for use later
 
     $vnstatJSON = popen("$path --json -i $interface", "r");
@@ -177,35 +175,17 @@ function get_vnstat_data($path, $type, $interface) {
         }
     }
 
-    usort($hourlyGraph, function ($item1, $item2) {
+    $sorting_function = function ($item1, $item2) {
         if ($item1['time'] == $item2['time']) return 0;
         return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
+    };
 
-    usort($hourly, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-    
-    usort($dailyGraph, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-
-    usort($daily, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-    
-    usort($monthlyGraph, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
-
-    usort($monthly, function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
-    });
+    usort($hourly, $sorting_function);
+    usort($hourlyGraph, $sorting_function);
+    usort($daily, $sorting_function);
+    usort($dailyGraph, $sorting_function);
+    usort($monthly, $sorting_function);
+    usort($monthlyGraph, $sorting_function);
 
     // Sort Top 10 Days by Highest Total Usage first
     usort($top10, function ($item1, $item2) {

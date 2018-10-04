@@ -346,10 +346,10 @@ if (isset($_GET['i'])) {
             </div>
         </div>
 
-    <footer class="footer">
-      <div class="container">
-        <span class="text-muted">Copyright (C) <?php echo date("Y"); ?> Alexander Marston - <a href="https://github.com/alexandermarston/vnstat-dashboard">vnstat-dashboard</a></span>
-      </div>
-    </footer>
+        <footer class="footer">
+            <div class="container">
+                <span class="text-muted">Copyright (C) <?php echo date("Y"); ?> Alexander Marston - <a href="https://github.com/alexandermarston/vnstat-dashboard">vnstat-dashboard</a></span>
+            </div>
+        </footer>
     </body>
 </html>

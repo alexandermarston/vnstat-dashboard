@@ -17,24 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-error_reporting(E_ALL | E_NOTICE);
-
 // Set the default system Timezone
 date_default_timezone_set('Europe/London');
-
-// date format: hourly
-// ga = 12-hour am/pm (ex. 11am)
-// H = 24-hour (ex. 23)
-$vnstat_config_format_hour = "ga";
 
 // Path of vnstat
 $vnstat_bin_dir = '/usr/bin/vnstat';
 
 // Set to true to set your own interfaces
 $use_predefined_interfaces = false;
-
-// Byte format to use in graphs
-$byte_formatter = "MB";
 
 if ($use_predefined_interfaces == true) {
     $interface_list = array("eth0", "eth1");

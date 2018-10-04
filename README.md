@@ -10,6 +10,8 @@ An adaptation of vnstat-php-frontend by bjd using Bootstrap written in PHP.
 * Top 10 Day Statistics
 * Automatically populated interface selection
 
+## System Requirements
+* PHP Version 5.4
 
 ## How to run it with Docker
 ### Prerequisites
@@ -25,7 +27,6 @@ An adaptation of vnstat-php-frontend by bjd using Bootstrap written in PHP.
 
 ### How to stop it
 `docker-compose down`
-
 
 ## Licensing
 Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
