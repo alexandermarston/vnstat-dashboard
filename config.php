@@ -32,7 +32,7 @@ if ($use_predefined_interfaces == true) {
     $interface_name['eth0'] = "Internal #1";
     $interface_name['eth1'] = "Internal #2";
 } else {
-    $interface_list = get_vnstat_interfaces($vnstat_bin_dir);
+    $interface_list = getVnstatInterfaces($vnstat_bin_dir);
 
     foreach ($interface_list as $interface) {
         $interface_name[$interface] = $interface;

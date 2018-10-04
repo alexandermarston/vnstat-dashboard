@@ -19,7 +19,7 @@
 require('vnstat.php'); // The vnstat information parser
 require('config.php'); // Include all the configuration information
 
-function print_options()
+function printOptions()
 {
     global $interface_list;
 
@@ -34,7 +34,7 @@ function print_options()
     }
 }
 
-function print_table_stats($path, $type, $interface, $label)
+function printTableStats($path, $type, $interface, $label)
 {
     echo '<table class="table table-bordered">
         <thead>
@@ -46,7 +46,7 @@ function print_table_stats($path, $type, $interface, $label)
         </tr>
         </thead>
         <tbody>';
-    $data = get_vnstat_data($path, $type, $interface);
+    $data = getVnstatData($path, $type, $interface);
 
     for ($i = 0; $i < count($data); $i++) {
         $label = $data[$i]['label'];
@@ -103,16 +103,16 @@ if (isset($_GET['i'])) {
             let data = google.visualization.arrayToDataTable([
                 ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $hourlyGraph = get_vnstat_data($vnstat_bin_dir, "hourlyGraph", $thisInterface);
+                $hourlyGraph = getVnstatData($vnstat_bin_dir, "hourlyGraph", $thisInterface);
 
-                $hourlyLargestValue = get_largest_value($hourlyGraph);
-                $hourlyLargestPrefix = get_largest_prefix($hourlyLargestValue);
+                $hourlyLargestValue = getLargestValue($hourlyGraph);
+                $hourlyLargestPrefix = getLargestPrefix($hourlyLargestValue);
 
                 for ($i = 0; $i < count($hourlyGraph); $i++) {
                     $hour = $hourlyGraph[$i]['label'];
-                    $inTraffic = kbytes_to_string($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
-                    $outTraffic = kbytes_to_string($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
-                    $totalTraffic = kbytes_to_string($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
+                    $inTraffic = kbytesToString($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
+                    $outTraffic = kbytesToString($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
+                    $totalTraffic = kbytesToString($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
 
                     if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
                         continue;
@@ -142,16 +142,16 @@ if (isset($_GET['i'])) {
             let data = google.visualization.arrayToDataTable([
                 ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $dailyGraph = get_vnstat_data($vnstat_bin_dir, "dailyGraph", $thisInterface);
+                $dailyGraph = getVnstatData($vnstat_bin_dir, "dailyGraph", $thisInterface);
 
-                $dailyLargestValue = get_largest_value($dailyGraph);
-                $dailyLargestPrefix = get_largest_prefix($dailyLargestValue);
+                $dailyLargestValue = getLargestValue($dailyGraph);
+                $dailyLargestPrefix = getLargestPrefix($dailyLargestValue);
 
                 for ($i = 0; $i < count($dailyGraph); $i++) {
                     $day = $dailyGraph[$i]['label'];
-                    $inTraffic = kbytes_to_string($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
-                    $outTraffic = kbytes_to_string($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
-                    $totalTraffic = kbytes_to_string($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
+                    $inTraffic = kbytesToString($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
+                    $outTraffic = kbytesToString($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
+                    $totalTraffic = kbytesToString($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
 
                     if ($dailyGraph[$i]['time'] == "0") {
                         continue;
@@ -181,16 +181,16 @@ if (isset($_GET['i'])) {
             let data = google.visualization.arrayToDataTable([
                 ['Month', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $monthlyGraph = get_vnstat_data($vnstat_bin_dir, "monthlyGraph", $thisInterface);
+                $monthlyGraph = getVnstatData($vnstat_bin_dir, "monthlyGraph", $thisInterface);
 
-                $monthlyLargestValue = get_largest_value($monthlyGraph);
-                $monthlyLargestPrefix = get_largest_prefix($monthlyLargestValue);
+                $monthlyLargestValue = getLargestValue($monthlyGraph);
+                $monthlyLargestPrefix = getLargestPrefix($monthlyLargestValue);
 
                 for ($i = 0; $i < count($monthlyGraph); $i++) {
                     $hour = $monthlyGraph[$i]['label'];
-                    $inTraffic = kbytes_to_string($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
-                    $outTraffic = kbytes_to_string($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
-                    $totalTraffic = kbytes_to_string($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
+                    $inTraffic = kbytesToString($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
+                    $outTraffic = kbytesToString($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
+                    $totalTraffic = kbytesToString($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
 
                     if ($i == 23) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
@@ -215,7 +215,7 @@ if (isset($_GET['i'])) {
 <body>
 <div class="container">
     <div class="page-header">
-        <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php print_options(); ?>
+        <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php printOptions(); ?>
     </div>
 </div>
 
@@ -251,16 +251,16 @@ if (isset($_GET['i'])) {
 
     <div class="tab-content">
         <div class="tab-pane active" id="hourly">
-            <?php print_table_stats($vnstat_bin_dir, "hourly", $thisInterface, 'hour') ?>
+            <?php printTableStats($vnstat_bin_dir, "hourly", $thisInterface, 'hour') ?>
         </div>
         <div class="tab-pane" id="daily">
-            <?php print_table_stats($vnstat_bin_dir, "daily", $thisInterface, 'Day') ?>
+            <?php printTableStats($vnstat_bin_dir, "daily", $thisInterface, 'Day') ?>
         </div>
         <div class="tab-pane" id="monthly">
-            <?php print_table_stats($vnstat_bin_dir, "monthly", $thisInterface, 'Month') ?>
+            <?php printTableStats($vnstat_bin_dir, "monthly", $thisInterface, 'Month') ?>
         </div>
         <div class="tab-pane" id="top10">
-            <?php print_table_stats($vnstat_bin_dir, "top10", $thisInterface, 'Day') ?>
+            <?php printTableStats($vnstat_bin_dir, "top10", $thisInterface, 'Day') ?>
         </div>
     </div>
 </div>
