@@ -18,11 +18,12 @@
  */
 
 // $wSuf (without suffix MB, GB, etc)
-function kbytes_to_string($kb, $wSuf = false, $byte_notation = null) {
-    $units = array('TB', 'GB', 'MB', 'KB');
+function kbytes_to_string($kb, $wSuf = false, $byte_notation = null)
+{
+    $units = ['TB', 'GB', 'MB', 'KB'];
     $scale = 1024 * 1024 * 1024;
     $ui = 0;
-    
+
     $custom_size = isset($byte_notation) && in_array($byte_notation, $units);
 
     while ((($kb < $scale) && ($scale > 1)) || $custom_size) {
@@ -41,8 +42,9 @@ function kbytes_to_string($kb, $wSuf = false, $byte_notation = null) {
     }
 }
 
-function get_vnstat_interfaces($path) {
-    $vnstat_interfaces = array(); // Create an empty array
+function get_vnstat_interfaces($path)
+{
+    $vnstat_interfaces = []; // Create an empty array
 
     $vnstatIF = popen("$path --iflist", "r");
     if (is_resource($vnstatIF)) {
@@ -60,14 +62,16 @@ function get_vnstat_interfaces($path) {
     return $vnstat_interfaces;
 }
 
-function get_largest_value($array) {
-    return $max = array_reduce($array, function($a, $b) {
+function get_largest_value($array)
+{
+    return $max = array_reduce($array, function ($a, $b) {
         return $a > $b['total'] ? $a : $b['total'];
     });
 }
 
-function get_largest_prefix($kb) {
-    $units = array('TB', 'GB', 'MB', 'KB');
+function get_largest_prefix($kb)
+{
+    $units = ['TB', 'GB', 'MB', 'KB'];
     $scale = 1024 * 1024 * 1024;
     $ui = 0;
 
@@ -79,8 +83,9 @@ function get_largest_prefix($kb) {
     return $units[$ui];
 }
 
-function get_vnstat_data($path, $type, $interface) {
-    $vnstat_information = array(); // Create an empty array for use later
+function get_vnstat_data($path, $type, $interface)
+{
+    $vnstat_information = []; // Create an empty array for use later
 
     $vnstatJSON = popen("$path --json -i $interface", "r");
     $vnstatDecoded = "";
@@ -98,13 +103,13 @@ function get_vnstat_data($path, $type, $interface) {
 
     $vnstatDecoded = json_decode($vnstatDecoded, true);
 
-    $hourlyGraph = array();
-    $hourly = array();
-    $dailyGraph = array();
-    $daily = array();
-    $monthlyGraph = array();
-    $monthly = array();
-    $top10 = array();
+    $hourlyGraph = [];
+    $hourly = [];
+    $dailyGraph = [];
+    $daily = [];
+    $monthlyGraph = [];
+    $monthly = [];
+    $top10 = [];
 
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['tops'] as $top) {
         if (is_array($top)) {
@@ -176,8 +181,11 @@ function get_vnstat_data($path, $type, $interface) {
     }
 
     $sorting_function = function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) return 0;
-        return $item1['time'] > $item2['time'] ? -1 : 1;
+        if ($item1['time'] == $item2['time']) {
+            return 0;
+        } else {
+            return $item1['time'] > $item2['time'] ? -1 : 1;
+        }
     };
 
     usort($hourly, $sorting_function);
@@ -189,8 +197,11 @@ function get_vnstat_data($path, $type, $interface) {
 
     // Sort Top 10 Days by Highest Total Usage first
     usort($top10, function ($item1, $item2) {
-        if ($item1['totalraw'] == $item2['totalraw']) return 0;
-        return $item1['totalraw'] > $item2['totalraw'] ? -1 : 1;
+        if ($item1['totalraw'] == $item2['totalraw']) {
+            return 0;
+        } else {
+            return $item1['totalraw'] > $item2['totalraw'] ? -1 : 1;
+        }
     });
 
     switch ($type) {
@@ -209,5 +220,6 @@ function get_vnstat_data($path, $type, $interface) {
         case "top10":
             return $top10;
     }
+
+    return false;
 }
-?>
