@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
  *
@@ -17,17 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-return [
 
-	// Set your timezone
-	'timezone' => 'Europe/London',
+// $wSuf (without suffix MB, GB, etc)
+function kbytesToString($kb, $wSuf = false, $byte_notation = null)
+{
+    $units = ['TB', 'GB', 'MB', 'KB'];
+    $scale = 1024 * 1024 * 1024;
+    $ui = 0;
 
-	// Set where to find vnstant binary
-	// Default: /usr/bin/vnstat
-	'vnstat_bin_dir' => '/usr/bin/vnstat',
+    $custom_size = isset($byte_notation) && in_array($byte_notation, $units);
 
-	// Use of predefined interfaces like eth0 or use vnstat to find them
-	// Default: false
-	'use_predefined_interfaces' => false,
+    while ((($kb < $scale) && ($scale > 1)) || $custom_size) {
+        $ui++;
+        $scale = $scale / 1024;
 
-];
+        if ($custom_size && $units[$ui] == $byte_notation) {
+            break;
+        }
+    }
+
+    if ($wSuf == true) {
+        return sprintf("%0.2f", ($kb / $scale));
+    } else {
+        return sprintf("%0.2f %s", ($kb / $scale), $units[$ui]);
+    }
+}
