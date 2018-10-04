@@ -98,7 +98,8 @@ if (isset($_GET['i'])) {
         google.charts.setOnLoadCallback(drawDailyChart);
         google.charts.setOnLoadCallback(drawMonthlyChart);
 
-        function drawHourlyChart() {
+        function drawHourlyChart()
+        {
             let data = google.visualization.arrayToDataTable([
                 ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
@@ -136,7 +137,8 @@ if (isset($_GET['i'])) {
             chart.draw(data, google.charts.Bar.convertOptions(options));
         }
 
-        function drawDailyChart() {
+        function drawDailyChart()
+        {
             let data = google.visualization.arrayToDataTable([
                 ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
@@ -174,7 +176,8 @@ if (isset($_GET['i'])) {
             chart.draw(data, google.charts.Bar.convertOptions(options));
         }
 
-        function drawMonthlyChart() {
+        function drawMonthlyChart()
+        {
             let data = google.visualization.arrayToDataTable([
                 ['Month', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
