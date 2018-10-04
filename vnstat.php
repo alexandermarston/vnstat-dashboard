@@ -108,9 +108,8 @@ function get_vnstat_data($path, $type, $interface) {
     $monthly = array();
     $top10 = array();
 
+    $i = 0;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['tops'] as $top) {
-        $i = 0;
-
         if (is_array($top)) {
             ++$i;
 
@@ -122,9 +121,8 @@ function get_vnstat_data($path, $type, $interface) {
         }
     }
 
+    $i = 0;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['days'] as $day) {
-        $i = 0;
-
         if (is_array($day)) {
             ++$i;
 
@@ -143,9 +141,8 @@ function get_vnstat_data($path, $type, $interface) {
         }
     }
 
+    $i = 0;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['hours'] as $hour) {
-        $i = 0;
-
         if (is_array($hour)) {
             ++$i;
 
@@ -164,9 +161,8 @@ function get_vnstat_data($path, $type, $interface) {
         }
     }
 
+    $i = 0;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['months'] as $month) {
-        $i = 0;
-
         if (is_array($month)) {
             ++$i;
 
