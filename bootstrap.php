@@ -16,27 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'bootstrap.php';
-
-// Create a new VNStat app instance
-$app = new VNStat($config);
-
-// Create a Renderer instance passing the VNStat app object
-$view = new View($app);
-
-// Routing part
-$thisInterface = "";
-
-if (isset($_GET['i'])) {
-    $interfaceChosen = rawurldecode($_GET['i']);
-    if (in_array($interfaceChosen, $app->getInterfaceList(), true)) {
-        $thisInterface = $interfaceChosen;
-    } else {
-        $thisInterface = $app->getFirstInterface();
-    }
-} else {
-    // Assume they mean the first interface
-    $thisInterface = $app->getFirstInterface();
-}
-
-$view->render('home.php', ['thisInterface' => $thisInterface]);
+require_once('app/helpers.php');
+$config = require_once('config.php'); // Include all the configuration information
+require('app/vnstat.php'); // The vnstat information parser
+require('app/view.php'); // Include a simple renderer

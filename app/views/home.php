@@ -135,7 +135,7 @@
 <body>
 <div class="container">
     <div class="page-header">
-        <h1>Network Traffic (<?php echo $app->getInterfaceName($thisInterface); ?>)</h1> <?php $render->printOptions(); ?>
+        <h1>Network Traffic (<?php echo $app->getInterfaceName($thisInterface); ?>)</h1> <?php $this->printOptions(); ?>
     </div>
 </div>
 
@@ -171,16 +171,16 @@
 
     <div class="tab-content">
         <div class="tab-pane active" id="hourly">
-            <?php $render->printTableStats("hourly", $thisInterface, 'hour') ?>
+            <?php $this->printTableStats("hourly", $thisInterface, 'hour') ?>
         </div>
         <div class="tab-pane" id="daily">
-            <?php $render->printTableStats("daily", $thisInterface, 'Day') ?>
+            <?php $this->printTableStats("daily", $thisInterface, 'Day') ?>
         </div>
         <div class="tab-pane" id="monthly">
-            <?php $render->printTableStats("monthly", $thisInterface, 'Month') ?>
+            <?php $this->printTableStats("monthly", $thisInterface, 'Month') ?>
         </div>
         <div class="tab-pane" id="top10">
-            <?php $render->printTableStats("top10", $thisInterface, 'Day') ?>
+            <?php $this->printTableStats("top10", $thisInterface, 'Day') ?>
         </div>
     </div>
 </div>
