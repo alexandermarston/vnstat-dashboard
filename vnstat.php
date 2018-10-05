@@ -120,7 +120,6 @@ class VNStat
             }
 
             $vnstatDecoded = $iBuffer;
-
             pclose($vnstatJSON);
         }
 
@@ -134,6 +133,7 @@ class VNStat
         $monthly = [];
         $top10 = [];
 
+        $i = 0;
         foreach ($vnstatDecoded['interfaces'][0]['traffic']['tops'] as $top) {
             if (is_array($top)) {
                 ++$i;
@@ -146,6 +146,7 @@ class VNStat
             }
         }
 
+        $i = 0;
         foreach ($vnstatDecoded['interfaces'][0]['traffic']['days'] as $day) {
             if (is_array($day)) {
                 ++$i;
@@ -165,6 +166,7 @@ class VNStat
             }
         }
 
+        $i = 0;
         foreach ($vnstatDecoded['interfaces'][0]['traffic']['hours'] as $hour) {
             if (is_array($hour)) {
                 ++$i;
@@ -181,6 +183,26 @@ class VNStat
                 $hourlyGraph[$i]['tx'] = $hour['tx'];
                 $hourlyGraph[$i]['total'] = ($hour['rx'] + $hour['tx']);
                 $hourlyGraph[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
+            }
+        }
+
+        $i = 0;
+        foreach ($vnstatDecoded['interfaces'][0]['traffic']['months'] as $month) {
+            if (is_array($month)) {
+                ++$i;
+
+                $monthly[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
+                $monthly[$i]['rx'] = kbytesToString($month['rx']);
+                $monthly[$i]['tx'] = kbytesToString($month['tx']);
+                $monthly[$i]['totalraw'] = ($month['rx'] + $month['tx']);
+                $monthly[$i]['total'] = kbytesToString($month['rx'] + $month['tx']);
+                $monthly[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
+
+                $monthlyGraph[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
+                $monthlyGraph[$i]['rx'] = $month['rx'];
+                $monthlyGraph[$i]['tx'] = $month['tx'];
+                $monthlyGraph[$i]['total'] = ($month['rx'] + $month['tx']);
+                $monthlyGraph[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
             }
         }
 
@@ -246,5 +268,4 @@ class VNStat
 
         return false;
     }
-
 }
