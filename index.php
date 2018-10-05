@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once('helpers.php');
 $config = require_once('config.php'); // Include all the configuration information
 require('vnstat.php'); // The vnstat information parser
 require('renderer.php'); // Include a simple renderer

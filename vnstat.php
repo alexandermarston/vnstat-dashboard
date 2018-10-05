@@ -83,27 +83,6 @@ class VNStat
         return reset($this->interface_list);
     }
 
-    function getLargestValue($array)
-    {
-        return $max = array_reduce($array, function ($a, $b) {
-            return $a > $b['total'] ? $a : $b['total'];
-        });
-    }
-
-    function getLargestPrefix($kb)
-    {
-        $units = ['TB', 'GB', 'MB', 'KB'];
-        $scale = 1024 * 1024 * 1024;
-        $ui = 0;
-
-        while ((($kb < $scale) && ($scale > 1))) {
-            $ui++;
-            $scale = $scale / 1024;
-        }
-
-        return $units[$ui];
-    }
-
     function getVnstatData($type, $interface)
     {
         $path = $this->config['vnstat_bin_dir'];

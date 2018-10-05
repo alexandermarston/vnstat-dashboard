@@ -41,3 +41,25 @@ function kbytesToString($kb, $wSuf = false, $byte_notation = null)
         return sprintf("%0.2f %s", ($kb / $scale), $units[$ui]);
     }
 }
+
+
+function getLargestPrefix($kb)
+{
+    $units = ['TB', 'GB', 'MB', 'KB'];
+    $scale = 1024 * 1024 * 1024;
+    $ui = 0;
+
+    while ((($kb < $scale) && ($scale > 1))) {
+        $ui++;
+        $scale = $scale / 1024;
+    }
+
+    return $units[$ui];
+}
+
+function getLargestValue($array)
+{
+    return $max = array_reduce($array, function ($a, $b) {
+        return $a > $b['total'] ? $a : $b['total'];
+    });
+}

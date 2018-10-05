@@ -25,8 +25,8 @@
                 <?php
                 $hourlyGraph = $app->getVnstatData("hourlyGraph", $thisInterface);
 
-                $hourlyLargestValue = $app->getLargestValue($hourlyGraph);
-                $hourlyLargestPrefix = $app->getLargestPrefix($hourlyLargestValue);
+                $hourlyLargestValue = getLargestValue($hourlyGraph);
+                $hourlyLargestPrefix = getLargestPrefix($hourlyLargestValue);
 
                 for ($i = 0; $i < count($hourlyGraph); $i++) {
                     $hour = $hourlyGraph[$i]['label'];
@@ -64,8 +64,8 @@
                 <?php
                 $dailyGraph = $app->getVnstatData("dailyGraph", $thisInterface);
 
-                $dailyLargestValue = $app->getLargestValue($dailyGraph);
-                $dailyLargestPrefix = $app->getLargestPrefix($dailyLargestValue);
+                $dailyLargestValue = getLargestValue($dailyGraph);
+                $dailyLargestPrefix = getLargestPrefix($dailyLargestValue);
 
                 for ($i = 0; $i < count($dailyGraph); $i++) {
                     $day = $dailyGraph[$i]['label'];
@@ -103,8 +103,8 @@
                 <?php
                 $monthlyGraph = $app->getVnstatData("monthlyGraph", $thisInterface);
 
-                $monthlyLargestValue = $app->getLargestValue($monthlyGraph);
-                $monthlyLargestPrefix = $app->getLargestPrefix($monthlyLargestValue);
+                $monthlyLargestValue = getLargestValue($monthlyGraph);
+                $monthlyLargestPrefix = getLargestPrefix($monthlyLargestValue);
 
                 for ($i = 0; $i < count($monthlyGraph); $i++) {
                     $hour = $monthlyGraph[$i]['label'];
