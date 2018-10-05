@@ -251,7 +251,7 @@ if (isset($_GET['i'])) {
 
     <div class="tab-content">
         <div class="tab-pane active" id="hourly">
-            <?php printTableStats($vnstat_bin_dir, "hourly", $thisInterface, 'hour') ?>
+            <?php printTableStats($vnstat_bin_dir, "hourly", $thisInterface, 'Hour') ?>
         </div>
         <div class="tab-pane" id="daily">
             <?php printTableStats($vnstat_bin_dir, "daily", $thisInterface, 'Day') ?>
