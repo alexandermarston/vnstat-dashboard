@@ -24,16 +24,20 @@ function kbytesToString($kb, $wSuf = false, $targetSize = null)
     $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
     $diff = 0;
 
-    if ($targetSize === null) {
+    if ($kb != 0) {
 
-        $diff = floor(log($kb) / log(1000));
-        $targetSize = $units[$diff];
+        if ($targetSize === null) {
 
-    } else {
+            $diff = floor(log($kb) / log(1000));
+            $targetSize = $units[$diff];
 
-        $diff = array_search($targetSize, $units);
-        if ($diff === FALSE) {
-            throw new \InvalidArgument('Unknown notation ' . $targetSize);
+        } else {
+
+            $diff = array_search($targetSize, $units);
+            if ($diff === FALSE) {
+                throw new \InvalidArgument('Unknown notation ' . $targetSize);
+            }
+
         }
 
     }
