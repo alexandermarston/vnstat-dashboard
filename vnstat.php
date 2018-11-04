@@ -21,18 +21,18 @@
 function kbytesToString($kb, $wSuf = false, $byte_notation = null)
 {
     $units = ['TB', 'GB', 'MB', 'KB'];
-    $scale = 1024 * 1024 * 1024;
+    $scale = 1024 * 1024 * 1024 * 1024;
     $ui = 0;
 
     $custom_size = isset($byte_notation) && in_array($byte_notation, $units);
 
     while ((($kb < $scale) && ($scale > 1)) || $custom_size) {
-        $ui++;
-        $scale = $scale / 1024;
 
         if ($custom_size && $units[$ui] == $byte_notation) {
             break;
         }
+        $ui++;
+        $scale = $scale / 1024;
     }
 
     if ($wSuf == true) {
@@ -112,7 +112,7 @@ function getVnstatData($path, $type, $interface)
     $top10 = [];
 
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['tops'] as $top) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['top'] as $top) {
         if (is_array($top)) {
             ++$i;
 
@@ -125,7 +125,7 @@ function getVnstatData($path, $type, $interface)
     }
 
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['days'] as $day) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['day'] as $day) {
         if (is_array($day)) {
             ++$i;
 
@@ -145,7 +145,7 @@ function getVnstatData($path, $type, $interface)
     }
 
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['hours'] as $hour) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['hour'] as $hour) {
         if (is_array($hour)) {
             ++$i;
 
@@ -164,8 +164,10 @@ function getVnstatData($path, $type, $interface)
         }
     }
 
+    asort($vnstatDecoded['interfaces'][0]['traffic']['month']);
+
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['months'] as $month) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['month'] as $month) {
         if (is_array($month)) {
             ++$i;
 
@@ -174,13 +176,13 @@ function getVnstatData($path, $type, $interface)
             $monthly[$i]['tx'] = kbytesToString($month['tx']);
             $monthly[$i]['totalraw'] = ($month['rx'] + $month['tx']);
             $monthly[$i]['total'] = kbytesToString($month['rx'] + $month['tx']);
-            $monthly[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
+            $monthly[$i]['time'] = mktime(0, 0, 0, $month['date']['month'], 1, $month['date']['year']);
 
             $monthlyGraph[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
             $monthlyGraph[$i]['rx'] = $month['rx'];
             $monthlyGraph[$i]['tx'] = $month['tx'];
             $monthlyGraph[$i]['total'] = ($month['rx'] + $month['tx']);
-            $monthlyGraph[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
+            $monthlyGraph[$i]['time'] = mktime(0, 0, 0, $month['date']['month'], 1, $month['date']['year']);
         }
     }
 
