@@ -18,27 +18,36 @@
  */
 
 // $wSuf (without suffix MB, GB, etc)
-function kbytesToString($kb, $wSuf = false, $byte_notation = null)
+function kbytesToString($kb, $wSuf = false, $targetSize = null)
 {
-    $units = ['TB', 'GB', 'MB', 'KB'];
-    $scale = 1024 * 1024 * 1024;
-    $ui = 0;
 
-    $custom_size = isset($byte_notation) && in_array($byte_notation, $units);
+    $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+    $diff = 0;
 
-    while ((($kb < $scale) && ($scale > 1)) || $custom_size) {
-        $ui++;
-        $scale = $scale / 1024;
+    if ($kb != 0) {
 
-        if ($custom_size && $units[$ui] == $byte_notation) {
-            break;
+        if ($targetSize === null) {
+
+            $diff = floor(log($kb) / log(1000));
+            $targetSize = $units[$diff];
+
+        } else {
+
+            $diff = array_search($targetSize, $units);
+            if ($diff === FALSE) {
+                throw new \InvalidArgument('Unknown notation ' . $targetSize);
+            }
+
         }
+
     }
 
+    $value = $kb / (1000 ** $diff);
+
     if ($wSuf == true) {
-        return sprintf("%0.2f", ($kb / $scale));
+        return sprintf('%0.2f', $value);
     } else {
-        return sprintf("%0.2f %s", ($kb / $scale), $units[$ui]);
+        return sprintf('%0.2f %s', $value, $units[$diff]);
     }
 }
 
@@ -110,79 +119,37 @@ function getVnstatData($path, $type, $interface)
     $monthlyGraph = [];
     $monthly = [];
     $top10 = [];
+    $top10Graph = [];
 
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['tops'] as $top) {
-        if (is_array($top)) {
-            ++$i;
+    generateGraph(
+        $vnstatDecoded['interfaces'][0]['traffic']['tops'],
+        ['type' => 'd/m/Y'],
+        $top,
+        $top10Graph
+    );
+    unset($top10Graph);
 
-            $top10[$i]['label'] = date('d/m/Y', strtotime($top['date']['month'] . "/" . $top['date']['day'] . "/" . $top['date']['year']));
-            $top10[$i]['rx'] = kbytesToString($top['rx']);
-            $top10[$i]['tx'] = kbytesToString($top['tx']);
-            $top10[$i]['totalraw'] = ($top['rx'] + $top['tx']);
-            $top10[$i]['total'] = kbytesToString($top['rx'] + $top['tx']);
-        }
-    }
+    generateGraph(
+        $vnstatDecoded['interfaces'][0]['traffic']['days'],
+        ['type' => 'd/m/Y', 'typeGraph' => 'jS'],
+        $daily,
+        $dailyGraph
+    );
 
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['days'] as $day) {
-        if (is_array($day)) {
-            ++$i;
+    generateGraph(
+        $vnstatDecoded['interfaces'][0]['traffic']['hours'],
+        ['type' => 'ga', 'typeGraph' => 'ga'],
+        $hourly,
+        $hourlyGraph,
+        true
+    );
 
-            $daily[$i]['label'] = date('d/m/Y', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
-            $daily[$i]['rx'] = kbytesToString($day['rx']);
-            $daily[$i]['tx'] = kbytesToString($day['tx']);
-            $daily[$i]['totalraw'] = ($day['rx'] + $day['tx']);
-            $daily[$i]['total'] = kbytesToString($day['rx'] + $day['tx']);
-            $daily[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
-
-            $dailyGraph[$i]['label'] = date('jS', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
-            $dailyGraph[$i]['rx'] = $day['rx'];
-            $dailyGraph[$i]['tx'] = $day['tx'];
-            $dailyGraph[$i]['total'] = ($day['rx'] + $day['tx']);
-            $dailyGraph[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
-        }
-    }
-
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['hours'] as $hour) {
-        if (is_array($hour)) {
-            ++$i;
-
-            $hourly[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
-            $hourly[$i]['rx'] = kbytesToString($hour['rx']);
-            $hourly[$i]['tx'] = kbytesToString($hour['tx']);
-            $hourly[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
-            $hourly[$i]['total'] = kbytesToString($hour['rx'] + $hour['tx']);
-            $hourly[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
-
-            $hourlyGraph[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
-            $hourlyGraph[$i]['rx'] = $hour['rx'];
-            $hourlyGraph[$i]['tx'] = $hour['tx'];
-            $hourlyGraph[$i]['total'] = ($hour['rx'] + $hour['tx']);
-            $hourlyGraph[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
-        }
-    }
-
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['months'] as $month) {
-        if (is_array($month)) {
-            ++$i;
-
-            $monthly[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
-            $monthly[$i]['rx'] = kbytesToString($month['rx']);
-            $monthly[$i]['tx'] = kbytesToString($month['tx']);
-            $monthly[$i]['totalraw'] = ($month['rx'] + $month['tx']);
-            $monthly[$i]['total'] = kbytesToString($month['rx'] + $month['tx']);
-            $monthly[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
-
-            $monthlyGraph[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
-            $monthlyGraph[$i]['rx'] = $month['rx'];
-            $monthlyGraph[$i]['tx'] = $month['tx'];
-            $monthlyGraph[$i]['total'] = ($month['rx'] + $month['tx']);
-            $monthlyGraph[$i]['time'] = mktime(0, 0, 0, $hour['date']['month'], 1, $hour['date']['year']);
-        }
-    }
+    generateGraph(
+        $vnstatDecoded['interfaces'][0]['traffic']['months'],
+        ['type' => 'F', 'typeGraph' => 'F'],
+        $monthly,
+        $monthlyGraph
+    );
 
     $sorting_function = function ($item1, $item2) {
         if ($item1['time'] == $item2['time']) {
@@ -226,4 +193,34 @@ function getVnstatData($path, $type, $interface)
     }
 
     return false;
+}
+
+function generateGraph($traffic, $dateFormat, &$type, &$typeGraph, $hour = false)
+{
+    $i = 0;
+    foreach ($traffic as $kind) {
+        if (is_array($kind)) {
+            ++$i;
+            $startTime = 0;
+            if($hour) {
+                $startTime = $kind['id'];
+            }
+
+            $type[$i]['label'] = date($dateFormat['type'], mktime($startTime, 0, 0, $kind['date']['month'], $kind['date']['day'], $kind['date']['year']));
+            $type[$i]['rx'] = kbytesToString($kind['rx']);
+            $type[$i]['tx'] = kbytesToString($kind['tx']);
+            $type[$i]['totalraw'] = ($kind['rx'] + $kind['tx']);
+            $type[$i]['total'] = kbytesToString($kind['rx'] + $kind['tx']);
+
+            if (is_array($typeGraph)) {
+                $type[$i]['time'] = mktime($startTime, 0, 0, $kind['date']['month'], $kind['date']['day'], $kind['date']['year']);
+
+                $typeGraph[$i]['label'] = date($dateFormat['typeGraph'], mktime($startTime, 0, 0, $kind['date']['month'], $kind['date']['day'], $kind['date']['year']));
+                $typeGraph[$i]['rx'] = $kind['rx'];
+                $typeGraph[$i]['tx'] = $kind['tx'];
+                $typeGraph[$i]['total'] = ($kind['rx'] + $kind['tx']);
+                $typeGraph[$i]['time'] = mktime($startTime, 0, 0, $kind['date']['month'], $kind['date']['day'], $kind['date']['year']);
+            }
+        }
+    }
 }
