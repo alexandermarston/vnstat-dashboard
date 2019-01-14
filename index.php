@@ -215,6 +215,7 @@ if (isset($_GET['i'])) {
 <body>
 <div class="container">
     <div class="page-header">
+        <h3><?php printf('Hostname: %s', gethostname()); ?></h3>
         <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php printOptions(); ?>
     </div>
 </div>
