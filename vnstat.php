@@ -21,7 +21,7 @@
 function bytesToString($bytes, $wSuf = false, $byte_notation = null)
 {
     //print $byte . (($byte_notation !== null)?(" " . $byte_notation):("")) . " / ";
-    $units = ['TB', 'GB', 'MB', 'KB'];
+    $units = ['TiB', 'GiB', 'MiB', 'KiB'];
     $scale = 1024 * 1024 * 1024 * 1024;
     $ui = 0;
 
@@ -72,7 +72,7 @@ function getLargestValue($array)
 
 function getLargestPrefix($bytes)
 {
-    $units = ['TB', 'GB', 'MB', 'KB'];
+    $units = ['TiB', 'GiB', 'MiB', 'KiB'];
     $scale = 1024 * 1024 * 1024 * 1024;
     $ui = 0;
 
