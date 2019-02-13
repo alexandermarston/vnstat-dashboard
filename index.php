@@ -118,11 +118,7 @@ if (isset($_GET['i'])) {
                         continue;
                     }
 
-                    if ($i == 23) {
-                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
-                    } else {
-                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
-                    }
+                    echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                 }
                 ?>
             ]);
@@ -157,11 +153,7 @@ if (isset($_GET['i'])) {
                         continue;
                     }
 
-                    if ($i == 29) {
-                        echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
-                    } else {
-                        echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
-                    }
+                    echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                 }
                 ?>
             ]);
@@ -192,11 +184,7 @@ if (isset($_GET['i'])) {
                     $outTraffic = bytesToString($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
                     $totalTraffic = bytesToString($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
 
-                    if ($i == 23) {
-                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
-                    } else {
-                        echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
-                    }
+                    echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                 }
                 ?>
             ]);
