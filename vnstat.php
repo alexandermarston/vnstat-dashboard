@@ -110,6 +110,10 @@ function getVnstatData($path, $type, $interface)
     $monthlyGraph = [];
     $monthly = [];
     $top10 = [];
+    $version = 1;
+    if( isset( $vnstatDecoded['jsonversion'] )){
+	    $version = $vnstatDecoded['jsonversion'];
+    }
 
     $i = 0;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['top'] as $top) {
@@ -149,18 +153,24 @@ function getVnstatData($path, $type, $interface)
         if (is_array($hour)) {
             ++$i;
 
-            $hourly[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
+	    if( $version == 1 ){
+		    $h = $hours['id'];
+	    } else {
+		    $h = $hour['time']['hour'];
+	    }
+
+            $hourly[$i]['label'] = date("ga", mktime($h, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
             $hourly[$i]['rx'] = kbytesToString($hour['rx']);
             $hourly[$i]['tx'] = kbytesToString($hour['tx']);
             $hourly[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
             $hourly[$i]['total'] = kbytesToString($hour['rx'] + $hour['tx']);
-            $hourly[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
+            $hourly[$i]['time'] = mktime($h, 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
 
-            $hourlyGraph[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
+            $hourlyGraph[$i]['label'] = date("ga", mktime($h, 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
             $hourlyGraph[$i]['rx'] = $hour['rx'];
             $hourlyGraph[$i]['tx'] = $hour['tx'];
             $hourlyGraph[$i]['total'] = ($hour['rx'] + $hour['tx']);
-            $hourlyGraph[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
+            $hourlyGraph[$i]['time'] = mktime($h, 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
         }
     }
 
