@@ -120,6 +120,7 @@ if (isset($_GET['i'])) {
 
                     if ($i == 23) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+			break;
                     } else {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                     }
