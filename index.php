@@ -160,6 +160,7 @@ if (isset($_GET['i'])) {
 
                     if ($i == 29) {
                         echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+                        break;    
                     } else {
                         echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                     }
@@ -195,6 +196,7 @@ if (isset($_GET['i'])) {
 
                     if ($i == 23) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+                        break;
                     } else {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                     }
