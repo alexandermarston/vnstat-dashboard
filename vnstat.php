@@ -18,15 +18,16 @@
  */
 
 // $wSuf (without suffix MB, GB, etc)
-function kbytesToString($kb, $wSuf = false, $byte_notation = null)
+function bytesToString($bytes, $wSuf = false, $byte_notation = null)
 {
+    //print $byte . (($byte_notation !== null)?(" " . $byte_notation):("")) . " / ";
     $units = ['TB', 'GB', 'MB', 'KB'];
     $scale = 1024 * 1024 * 1024 * 1024;
     $ui = 0;
 
     $custom_size = isset($byte_notation) && in_array($byte_notation, $units);
 
-    while ((($kb < $scale) && ($scale > 1)) || $custom_size) {
+    while ((($bytes < $scale) && ($scale > 1)) || $custom_size) {
 
         if ($custom_size && $units[$ui] == $byte_notation) {
             break;
@@ -36,9 +37,9 @@ function kbytesToString($kb, $wSuf = false, $byte_notation = null)
     }
 
     if ($wSuf == true) {
-        return sprintf("%0.2f", ($kb / $scale));
+        return sprintf("%0.2f", ($bytes / $scale));
     } else {
-        return sprintf("%0.2f %s", ($kb / $scale), $units[$ui]);
+        return sprintf("%0.2f %s", ($bytes / $scale), $units[$ui]);
     }
 }
 
@@ -69,13 +70,13 @@ function getLargestValue($array)
     });
 }
 
-function getLargestPrefix($kb)
+function getLargestPrefix($bytes)
 {
     $units = ['TB', 'GB', 'MB', 'KB'];
-    $scale = 1024 * 1024 * 1024;
+    $scale = 1024 * 1024 * 1024 * 1024;
     $ui = 0;
 
-    while ((($kb < $scale) && ($scale > 1))) {
+    while ((($bytes < $scale) && ($scale > 1))) {
         $ui++;
         $scale = $scale / 1024;
     }
@@ -121,10 +122,10 @@ function getVnstatData($path, $type, $interface)
             ++$i;
 
             $top10[$i]['label'] = date('d/m/Y', strtotime($top['date']['month'] . "/" . $top['date']['day'] . "/" . $top['date']['year']));
-            $top10[$i]['rx'] = kbytesToString($top['rx']);
-            $top10[$i]['tx'] = kbytesToString($top['tx']);
+            $top10[$i]['rx'] = bytesToString($top['rx']);
+            $top10[$i]['tx'] = bytesToString($top['tx']);
             $top10[$i]['totalraw'] = ($top['rx'] + $top['tx']);
-            $top10[$i]['total'] = kbytesToString($top['rx'] + $top['tx']);
+            $top10[$i]['total'] = bytesToString($top['rx'] + $top['tx']);
         }
     }
 
@@ -134,10 +135,10 @@ function getVnstatData($path, $type, $interface)
             ++$i;
 
             $daily[$i]['label'] = date('d/m/Y', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
-            $daily[$i]['rx'] = kbytesToString($day['rx']);
-            $daily[$i]['tx'] = kbytesToString($day['tx']);
+            $daily[$i]['rx'] = bytesToString($day['rx']);
+            $daily[$i]['tx'] = bytesToString($day['tx']);
             $daily[$i]['totalraw'] = ($day['rx'] + $day['tx']);
-            $daily[$i]['total'] = kbytesToString($day['rx'] + $day['tx']);
+            $daily[$i]['total'] = bytesToString($day['rx'] + $day['tx']);
             $daily[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
 
             $dailyGraph[$i]['label'] = date('jS', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
@@ -160,10 +161,10 @@ function getVnstatData($path, $type, $interface)
 	    }
 
             $hourly[$i]['label'] = date("ga", mktime($h, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
-            $hourly[$i]['rx'] = kbytesToString($hour['rx']);
-            $hourly[$i]['tx'] = kbytesToString($hour['tx']);
+            $hourly[$i]['rx'] = bytesToString($hour['rx']);
+            $hourly[$i]['tx'] = bytesToString($hour['tx']);
             $hourly[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
-            $hourly[$i]['total'] = kbytesToString($hour['rx'] + $hour['tx']);
+            $hourly[$i]['total'] = bytesToString($hour['rx'] + $hour['tx']);
             $hourly[$i]['time'] = mktime($h, 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
 
             $hourlyGraph[$i]['label'] = date("ga", mktime($h, 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
@@ -182,10 +183,10 @@ function getVnstatData($path, $type, $interface)
             ++$i;
 
             $monthly[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
-            $monthly[$i]['rx'] = kbytesToString($month['rx']);
-            $monthly[$i]['tx'] = kbytesToString($month['tx']);
+            $monthly[$i]['rx'] = bytesToString($month['rx']);
+            $monthly[$i]['tx'] = bytesToString($month['tx']);
             $monthly[$i]['totalraw'] = ($month['rx'] + $month['tx']);
-            $monthly[$i]['total'] = kbytesToString($month['rx'] + $month['tx']);
+            $monthly[$i]['total'] = bytesToString($month['rx'] + $month['tx']);
             $monthly[$i]['time'] = mktime(0, 0, 0, $month['date']['month'], 1, $month['date']['year']);
 
             $monthlyGraph[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));

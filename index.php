@@ -110,9 +110,9 @@ if (isset($_GET['i'])) {
 
                 for ($i = 0; $i < count($hourlyGraph); $i++) {
                     $hour = $hourlyGraph[$i]['label'];
-                    $inTraffic = kbytesToString($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
-                    $outTraffic = kbytesToString($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
-                    $totalTraffic = kbytesToString($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
+                    $inTraffic = bytesToString($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
+                    $outTraffic = bytesToString($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
+                    $totalTraffic = bytesToString($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
 
                     if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
                         continue;
@@ -150,9 +150,9 @@ if (isset($_GET['i'])) {
 
                 for ($i = 0; $i < count($dailyGraph); $i++) {
                     $day = $dailyGraph[$i]['label'];
-                    $inTraffic = kbytesToString($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
-                    $outTraffic = kbytesToString($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
-                    $totalTraffic = kbytesToString($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
+                    $inTraffic = bytesToString($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
+                    $outTraffic = bytesToString($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
+                    $totalTraffic = bytesToString($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
 
                     if ($dailyGraph[$i]['time'] == "0") {
                         continue;
@@ -189,9 +189,9 @@ if (isset($_GET['i'])) {
 
                 for ($i = 0; $i < count($monthlyGraph); $i++) {
                     $hour = $monthlyGraph[$i]['label'];
-                    $inTraffic = kbytesToString($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
-                    $outTraffic = kbytesToString($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
-                    $totalTraffic = kbytesToString($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
+                    $inTraffic = bytesToString($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
+                    $outTraffic = bytesToString($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
+                    $totalTraffic = bytesToString($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
 
                     if ($i == 23) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
