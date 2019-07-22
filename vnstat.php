@@ -19,6 +19,7 @@
 
 $logk = log(1024);
 $terraB = pow(1024,4);
+$version = 1;
 
 function getMagnitude($bytes)
 {
@@ -108,6 +109,8 @@ function getLargestPrefix($bytes)
 
 function getVnstatData($path, $type, $interface)
 {
+    global $version;
+
     $vnstat_information = []; // Create an empty array for use later
 
     $vnstatJSON = popen("$path --json -i $interface", "r");
@@ -135,13 +138,18 @@ function getVnstatData($path, $type, $interface)
     $monthlyGraph = [];
     $monthly = [];
     $top10 = [];
-    $version = 1;
+
     if( isset( $vnstatDecoded['jsonversion'] )){
-	    $version = $vnstatDecoded['jsonversion'];
+        $version = $vnstatDecoded['jsonversion'];
+    }
+
+    $s='';
+    if( $version == 1 ){
+        $s = 's';
     }
 
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['top'] as $top) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['top'.$s] as $top) {
         if (is_array($top)) {
             ++$i;
 
@@ -153,6 +161,7 @@ function getVnstatData($path, $type, $interface)
         }
     }
 
+    if( $version > 1 ){
     $i = 0;
     $j = 0;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['fiveminute'] as $min) {
@@ -178,9 +187,10 @@ function getVnstatData($path, $type, $interface)
             $fiveGraph[$j]['time'] = mktime($min['time']['hour'], $min['time']['minute'], 0, $min['date']['month'], $min['date']['day'], $min['date']['year']);
         }
     }
+    }
 
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['day'] as $day) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['day'.$s] as $day) {
         if (is_array($day)) {
             ++$i;
 
@@ -200,12 +210,12 @@ function getVnstatData($path, $type, $interface)
     }
 
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['hour'] as $hour) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['hour'.$s] as $hour) {
         if (is_array($hour)) {
             ++$i;
 
             if( $version == 1 ){
-                $h = $hours['id'];
+                $h = $hour['id'];
             } else {
                 $h = $hour['time']['hour'];
             }
@@ -225,10 +235,10 @@ function getVnstatData($path, $type, $interface)
         }
     }
 
-    asort($vnstatDecoded['interfaces'][0]['traffic']['month']);
+    asort($vnstatDecoded['interfaces'][0]['traffic']['month'.$s]);
 
     $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['month'] as $month) {
+    foreach ($vnstatDecoded['interfaces'][0]['traffic']['month'.$s] as $month) {
         if (is_array($month)) {
             ++$i;
 
