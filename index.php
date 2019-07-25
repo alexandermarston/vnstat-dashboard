@@ -86,17 +86,67 @@ if (isset($_GET['i'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
-        google.charts.load('current', {'packages': ['bar']});
+        google.charts.load('45.2', {'packages': ['corechart']});
+        google.charts.load('45.2', {'packages': ['bar']});
+        google.charts.setOnLoadCallback(drawFiveChart);
         google.charts.setOnLoadCallback(drawHourlyChart);
         google.charts.setOnLoadCallback(drawDailyChart);
         google.charts.setOnLoadCallback(drawMonthlyChart);
+
+        function drawFiveChart()
+        {
+            var data = new google.visualization.arrayToDataTable([
+                [{type: 'datetime', label: 'Time'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                <?php
+                $fiveGraph = getVnstatData($vnstat_bin_dir, "fiveGraph", $thisInterface);
+
+                $fiveLargestValue = getLargestValue($fiveGraph);
+                $fiveSmallestValue = getSmallestValue($fiveGraph);
+                $fiveLargestPrefix = getLargestPrefix($fiveLargestValue);
+                $fiveMagnitude = getMagnitude($fiveLargestValue);
+                $first = true;
+
+                for ($i = 0; $i < count($fiveGraph); $i++) {
+                    $time = $fiveGraph[$i]['label'];
+                    $inTraffic = bytesToString($fiveGraph[$i]['rx'], true, $fiveMagnitude);
+                    $outTraffic = bytesToString($fiveGraph[$i]['tx'], true, $fiveMagnitude);
+                    $totalTraffic = bytesToString($fiveGraph[$i]['total'], true, $fiveMagnitude);
+
+                    if ($first) {
+                        $first = false;
+                    } else {
+                        echo(",\n");
+                    }
+                    echo("['" . $time . "', " . $inTraffic . ", " . $outTraffic . ", " . $totalTraffic . "]");
+                }
+                echo("\n");
+                ?>
+            ]);
+
+            var options = {
+                title: 'Five minute Network Traffic',
+                subtitle: 'over last 6 hours',
+                orientation: 'horizontal',
+                hAxis: { direction: -1, format: 'H' },
+                vAxis: {
+                    format: '##.## <?php echo $fiveLargestPrefix; ?>',
+                    scaleType: 'log',
+                    baseline: <?php echo pow(10,floor(round(log10($fiveSmallestValue/pow(1024,$fiveMagnitude)),3))); ?>
+                }
+            };
+
+            //var chart = new google.charts.Bar(document.getElementById('fiveNetworkTrafficGraph'));
+            var chart = new google.visualization.BarChart(document.getElementById('fiveNetworkTrafficGraph'));
+            //chart.draw(data, google.charts.Bar.convertOptions(options));
+            chart.draw(data, options);
+        }
 
         function drawHourlyChart()
         {
@@ -107,18 +157,19 @@ if (isset($_GET['i'])) {
 
                 $hourlyLargestValue = getLargestValue($hourlyGraph);
                 $hourlyLargestPrefix = getLargestPrefix($hourlyLargestValue);
+                $hourlyMagnitude = getMagnitude($hourlyLargestValue);
 
                 for ($i = 0; $i < count($hourlyGraph); $i++) {
                     $hour = $hourlyGraph[$i]['label'];
-                    $inTraffic = kbytesToString($hourlyGraph[$i]['rx'], true, $hourlyLargestPrefix);
-                    $outTraffic = kbytesToString($hourlyGraph[$i]['tx'], true, $hourlyLargestPrefix);
-                    $totalTraffic = kbytesToString($hourlyGraph[$i]['total'], true, $hourlyLargestPrefix);
+                    $inTraffic = bytesToString($hourlyGraph[$i]['rx'], true, $hourlyMagnitude);
+                    $outTraffic = bytesToString($hourlyGraph[$i]['tx'], true, $hourlyMagnitude);
+                    $totalTraffic = bytesToString($hourlyGraph[$i]['total'], true, $hourlyMagnitude);
 
                     if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
                         continue;
                     }
 
-                    if ($i == 23) {
+                    if ($i == count($hourlyGraph) - 1) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
                     } else {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
@@ -146,19 +197,21 @@ if (isset($_GET['i'])) {
 
                 $dailyLargestValue = getLargestValue($dailyGraph);
                 $dailyLargestPrefix = getLargestPrefix($dailyLargestValue);
+                $dailyMagnitude = getMagnitude($dailyLargestValue);
 
                 for ($i = 0; $i < count($dailyGraph); $i++) {
                     $day = $dailyGraph[$i]['label'];
-                    $inTraffic = kbytesToString($dailyGraph[$i]['rx'], true, $dailyLargestPrefix);
-                    $outTraffic = kbytesToString($dailyGraph[$i]['tx'], true, $dailyLargestPrefix);
-                    $totalTraffic = kbytesToString($dailyGraph[$i]['total'], true, $dailyLargestPrefix);
+                    $inTraffic = bytesToString($dailyGraph[$i]['rx'], true, $dailyMagnitude);
+                    $outTraffic = bytesToString($dailyGraph[$i]['tx'], true, $dailyMagnitude);
+                    $totalTraffic = bytesToString($dailyGraph[$i]['total'], true, $dailyMagnitude);
 
                     if ($dailyGraph[$i]['time'] == "0") {
                         continue;
                     }
 
-                    if ($i == 29) {
+                    if ($i == count($dailyGraph)- 1) {
                         echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+			break;
                     } else {
                         echo("['" . $day . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                     }
@@ -168,7 +221,7 @@ if (isset($_GET['i'])) {
 
             let options = {
                 title: 'Daily Network Traffic',
-                subtitle: 'over last 29 days (most recent first)',
+                subtitle: 'over last 30 days (most recent first)',
                 vAxis: {format: '##.## <?php echo $dailyLargestPrefix; ?>'}
             };
 
@@ -185,15 +238,17 @@ if (isset($_GET['i'])) {
 
                 $monthlyLargestValue = getLargestValue($monthlyGraph);
                 $monthlyLargestPrefix = getLargestPrefix($monthlyLargestValue);
+                $monthlyMagnitude = getMagnitude($monthlyLargestValue);
 
                 for ($i = 0; $i < count($monthlyGraph); $i++) {
                     $hour = $monthlyGraph[$i]['label'];
-                    $inTraffic = kbytesToString($monthlyGraph[$i]['rx'], true, $monthlyLargestPrefix);
-                    $outTraffic = kbytesToString($monthlyGraph[$i]['tx'], true, $monthlyLargestPrefix);
-                    $totalTraffic = kbytesToString($monthlyGraph[$i]['total'], true, $monthlyLargestPrefix);
+                    $inTraffic = bytesToString($monthlyGraph[$i]['rx'], true, $monthlyMagnitude);
+                    $outTraffic = bytesToString($monthlyGraph[$i]['tx'], true, $monthlyMagnitude);
+                    $totalTraffic = bytesToString($monthlyGraph[$i]['total'], true, $monthlyMagnitude);
 
-                    if ($i == 23) {
+                    if ($i == count($monthlyGraph) - 1) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
+			break;
                     } else {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "],\n");
                     }
@@ -221,13 +276,19 @@ if (isset($_GET['i'])) {
 
 <div id="graphTabNav" class="container">
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#hourlyGraph" data-toggle="tab">Hourly Graph</a></li>
-        <li><a href="#dailyGraph" data-toggle="tab">Daily Graph</a></li>
-        <li><a href="#monthlyGraph" data-toggle="tab">Monthly Graph</a></li>
+        <li class="active">
+            <a href="#fiveGraph" data-toggle="tab">5Min</a></li>
+        <li><a href="#hourlyGraph" data-toggle="tab">Hourly</a></li>
+        <li><a href="#dailyGraph" data-toggle="tab">Daily</a></li>
+        <li><a href="#monthlyGraph" data-toggle="tab">Monthly</a></li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane active" id="hourlyGraph">
+        <div class="tab-pane active" id="fiveGraph">
+            <div id="fiveNetworkTrafficGraph" style="height: 300px;"></div>
+        </div>
+
+        <div class="tab-pane" id="hourlyGraph">
             <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
         </div>
 
@@ -243,14 +304,19 @@ if (isset($_GET['i'])) {
 
 <div id="tabNav" class="container">
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#hourly" data-toggle="tab">Hourly</a></li>
+        <li class="active">
+            <a href="#five" data-toggle="tab">5Min</a></li>
+        <li><a href="#hourly" data-toggle="tab">Hourly</a></li>
         <li><a href="#daily" data-toggle="tab">Daily</a></li>
         <li><a href="#monthly" data-toggle="tab">Monthly</a></li>
         <li><a href="#top10" data-toggle="tab">Top 10</a></li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane active" id="hourly">
+        <div class="tab-pane active" id="five">
+            <?php printTableStats($vnstat_bin_dir, "five", $thisInterface, 'Time') ?>
+        </div>
+        <div class="tab-pane" id="hourly">
             <?php printTableStats($vnstat_bin_dir, "hourly", $thisInterface, 'Hour') ?>
         </div>
         <div class="tab-pane" id="daily">
@@ -260,7 +326,7 @@ if (isset($_GET['i'])) {
             <?php printTableStats($vnstat_bin_dir, "monthly", $thisInterface, 'Month') ?>
         </div>
         <div class="tab-pane" id="top10">
-            <?php printTableStats($vnstat_bin_dir, "top10", $thisInterface, 'Day') ?>
+            <?php printTableStats($vnstat_bin_dir, "top10", $thisInterface, 'Top 10') ?>
         </div>
     </div>
 </div>
