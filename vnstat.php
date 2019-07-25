@@ -149,7 +149,7 @@ function getVnstatData($path, $type, $interface)
         if (is_array($hour)) {
             ++$i;
 
-            $hourly[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
+            $hourly[$i]['label'] = date("ga", mktime($hour['time']['hour'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
             $hourly[$i]['rx'] = kbytesToString($hour['rx']);
             $hourly[$i]['tx'] = kbytesToString($hour['tx']);
             $hourly[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
