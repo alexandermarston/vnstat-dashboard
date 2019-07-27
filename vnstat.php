@@ -227,7 +227,7 @@ function getVnstatData($path, $type, $interface)
             $hourly[$i]['total'] = bytesToString($hour['rx'] + $hour['tx']);
             $hourly[$i]['time'] = mktime($h, 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
 
-            $hourlyGraph[$i]['label'] = date("ga", mktime($h, 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
+            $hourlyGraph[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d)",$hour['date']['year'],$hour['date']['month']-1,$hour['date']['day'],$h,0);
             $hourlyGraph[$i]['rx'] = $hour['rx'];
             $hourlyGraph[$i]['tx'] = $hour['tx'];
             $hourlyGraph[$i]['total'] = ($hour['rx'] + $hour['tx']);

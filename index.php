@@ -100,8 +100,10 @@ if (isset($vnstat_config)) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
-        google.charts.load('45.2', {'packages': ['corechart']});
-        google.charts.load('45.2', {'packages': ['bar']});
+        <!-- google.charts.load('45.2', {'packages': ['corechart']}); -->
+        <!-- google.charts.load('45.2', {'packages': ['bar']}); -->
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.load('current', {'packages': ['bar']});
         google.charts.setOnLoadCallback(drawFiveChart);
         google.charts.setOnLoadCallback(drawHourlyChart);
         google.charts.setOnLoadCallback(drawDailyChart);
@@ -109,7 +111,7 @@ if (isset($vnstat_config)) {
 
         function drawFiveChart()
         {
-            var data = new google.visualization.arrayToDataTable([
+            let data = google.visualization.arrayToDataTable([
                 [{type: 'datetime', label: 'Time'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
                 $fiveGraph = getVnstatData($vnstat_cmd, "fiveGraph", $thisInterface);
@@ -141,7 +143,12 @@ if (isset($vnstat_config)) {
                 title: 'Five minute Network Traffic',
                 subtitle: 'over last 6 hours',
                 orientation: 'horizontal',
-                hAxis: { direction: -1, format: 'H' },
+                hAxis: { 
+                    direction: -1, 
+                    format: 'H', 
+                    minorGridlines: { count: 0 },
+                    title: 'Hour'
+                },
                 vAxis: {
                     format: '##.## <?php echo $fiveLargestPrefix; ?>',
                     scaleType: 'log',
@@ -150,9 +157,7 @@ if (isset($vnstat_config)) {
             };
 
             if (data.getNumberOfRows() > 0) {
-                //var chart = new google.charts.Bar(document.getElementById('fiveNetworkTrafficGraph'));
-                var chart = new google.visualization.BarChart(document.getElementById('fiveNetworkTrafficGraph'));
-                //chart.draw(data, google.charts.Bar.convertOptions(options));
+                let chart = new google.visualization.BarChart(document.getElementById('fiveNetworkTrafficGraph'));
                 chart.draw(data, options);
             }
         }
@@ -160,12 +165,13 @@ if (isset($vnstat_config)) {
         function drawHourlyChart()
         {
             let data = google.visualization.arrayToDataTable([
-                ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                [{type: 'datetime', label: 'Hour'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
                 $hourlyGraph = getVnstatData($vnstat_cmd, "hourlyGraph", $thisInterface);
 
                 $hourlyLargestValue = getLargestValue($hourlyGraph);
                 $hourlyLargestPrefix = getLargestPrefix($hourlyLargestValue);
+                $hourlySmallestValue = getSmallestValue($hourlyGraph);
                 $hourlyMagnitude = getMagnitude($hourlyLargestValue);
 
                 for ($i = 0; $i < count($hourlyGraph); $i++) {
@@ -173,10 +179,6 @@ if (isset($vnstat_config)) {
                     $inTraffic = bytesToString($hourlyGraph[$i]['rx'], true, $hourlyMagnitude);
                     $outTraffic = bytesToString($hourlyGraph[$i]['tx'], true, $hourlyMagnitude);
                     $totalTraffic = bytesToString($hourlyGraph[$i]['total'], true, $hourlyMagnitude);
-
-                    if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
-                        continue;
-                    }
 
                     if ($i == count($hourlyGraph) - 1) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
@@ -190,11 +192,21 @@ if (isset($vnstat_config)) {
             let options = {
                 title: 'Hourly Network Traffic',
                 subtitle: 'over last 24 hours',
-                vAxis: {format: '##.## <?php echo $hourlyLargestPrefix; ?>'}
+                orientation: 'horizontal',
+                hAxis: { 
+                    direction: -1, 
+                    format: 'd:H',
+                    title: 'Day:Hour'
+                },
+                vAxis: {
+                    format: '##.## <?php echo $hourlyLargestPrefix; ?>',
+                    scaleType: 'log',
+                    baseline: <?php echo pow(10,floor(round(log10($hourlySmallestValue/pow(1024,$hourlyMagnitude)),3))); ?>
+                }
             };
 
-            let chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
-            chart.draw(data, google.charts.Bar.convertOptions(options));
+            let chart = new google.visualization.BarChart(document.getElementById('hourlyNetworkTrafficGraph'));
+            chart.draw(data, options);
         }
 
         function drawDailyChart()
