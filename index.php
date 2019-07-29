@@ -100,8 +100,13 @@ if (isset($vnstat_config)) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
-        <!-- google.charts.load('45.2', {'packages': ['corechart']}); -->
-        <!-- google.charts.load('45.2', {'packages': ['bar']}); -->
+        $width = getCookie("width");
+        if (!$width || ($width != window.innerWidth)) {
+            //console.log(window.innerWidth);
+            createCookie("width", window.innerWidth, "1");
+            document.location.reload();
+        }
+
         google.charts.load('current', {'packages': ['corechart']});
         google.charts.load('current', {'packages': ['bar']});
         google.charts.setOnLoadCallback(drawFiveChart);
@@ -109,12 +114,33 @@ if (isset($vnstat_config)) {
         google.charts.setOnLoadCallback(drawDailyChart);
         google.charts.setOnLoadCallback(drawMonthlyChart);
 
+        function createCookie(name, value, days) {
+          var expires;
+          if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toGMTString();
+          } else {
+           expires = "";
+          }
+          document.cookie = escape(name) + "=" + escape(value) + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+            return v ? v[2] : null;
+        }
+
         function drawFiveChart()
         {
             let data = google.visualization.arrayToDataTable([
                 [{type: 'datetime', label: 'Time'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $fiveGraph = getVnstatData($vnstat_cmd, "fiveGraph", $thisInterface);
+                $width = 800;
+                if (isset($_COOKIE["width"])) {
+                    $width = $_COOKIE["width"];
+                }
+                $fiveGraph = getVnstatData($vnstat_cmd, "fiveGraph", $thisInterface, $width);
 
                 $fiveLargestValue = getLargestValue($fiveGraph);
                 $fiveSmallestValue = getSmallestValue($fiveGraph);
@@ -143,6 +169,11 @@ if (isset($vnstat_config)) {
                 title: 'Five minute Network Traffic',
                 subtitle: 'over last 6 hours',
                 orientation: 'horizontal',
+                bar: { groupWidth: '90%' },
+                chartArea: {
+                    left: 60,
+                    width: '85%'
+                },
                 hAxis: { 
                     direction: -1, 
                     format: 'H', 
@@ -193,6 +224,11 @@ if (isset($vnstat_config)) {
                 title: 'Hourly Network Traffic',
                 subtitle: 'over last 24 hours',
                 orientation: 'horizontal',
+                bar: { groupWidth: '90%' },
+                chartArea: {
+                    left: 60,
+                    width: '85%'
+                },
                 hAxis: { 
                     direction: -1, 
                     format: 'd:H',
@@ -289,6 +325,13 @@ if (isset($vnstat_config)) {
     </script>
 </head>
 <body>
+<style>
+   .container{
+     width: 100%;
+     margin: 0 auto;
+   }
+</style>
+
 <div class="container">
     <div class="page-header">
         <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php printOptions(); ?>

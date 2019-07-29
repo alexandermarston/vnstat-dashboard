@@ -43,7 +43,7 @@ function bytesToString($bytes, $wSuf = false, $magnitude = null)
     }
 
     if ($wSuf == true) {
-        return sprintf("%0.2f", ($bytes / pow(1024, $ui)));
+        return sprintf("%0.4f", ($bytes / pow(1024, $ui)));
     } else {
         return sprintf("%0.2f %s", ($bytes / pow(1024, $ui)), $units[$ui]);
     }
@@ -107,7 +107,7 @@ function getLargestPrefix($bytes)
     return $units[getMagnitude($bytes)];
 }
 
-function getVnstatData($path, $type, $interface)
+function getVnstatData($path, $type, $interface, $width = 800)
 {
     global $version;
 
@@ -164,6 +164,9 @@ function getVnstatData($path, $type, $interface)
     if( $version > 1 ){
     $i = 0;
     $j = 0;
+    $duration = floor(($width-200)/7);
+    if ($duration < 40) { $duration = 40; }
+    $duration = $duration * 180;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['fiveminute'] as $min) {
         if (is_array($min)) {
             ++$i;
@@ -175,7 +178,7 @@ function getVnstatData($path, $type, $interface)
             $five[$i]['total'] = bytesToString($min['rx'] + $min['tx']);
             $five[$i]['time'] = mktime($min['time']['hour'], $min['time']['minute'], 0, $min['date']['month'], $min['date']['day'], $min['date']['year']);
 
-            if (time() - $five[$i]['time'] > 6 * 60 * 60) {
+            if (time() - $five[$i]['time'] > $duration) {
                 continue;
             }
             ++$j;
