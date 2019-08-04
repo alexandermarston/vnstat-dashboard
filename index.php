@@ -77,6 +77,13 @@ if (isset($_GET['i'])) {
     // Assume they mean the first interface
     $thisInterface = reset($interface_list);
 }
+
+if (isset($vnstat_config)) {
+    $vnstat_cmd = $vnstat_bin_dir.' --config '.$vnstat_config;
+} else {
+    $vnstat_cmd = $vnstat_bin_dir;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -93,19 +100,47 @@ if (isset($_GET['i'])) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
-        google.charts.load('45.2', {'packages': ['corechart']});
-        google.charts.load('45.2', {'packages': ['bar']});
+        $width = getCookie("width");
+        if (!$width || ($width != window.innerWidth)) {
+            //console.log(window.innerWidth);
+            createCookie("width", window.innerWidth, "1");
+            document.location.reload();
+        }
+
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.load('current', {'packages': ['bar']});
         google.charts.setOnLoadCallback(drawFiveChart);
         google.charts.setOnLoadCallback(drawHourlyChart);
         google.charts.setOnLoadCallback(drawDailyChart);
         google.charts.setOnLoadCallback(drawMonthlyChart);
 
+        function createCookie(name, value, days) {
+          var expires;
+          if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toGMTString();
+          } else {
+           expires = "";
+          }
+          document.cookie = escape(name) + "=" + escape(value) + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+            return v ? v[2] : null;
+        }
+
         function drawFiveChart()
         {
-            var data = new google.visualization.arrayToDataTable([
+            let data = google.visualization.arrayToDataTable([
                 [{type: 'datetime', label: 'Time'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $fiveGraph = getVnstatData($vnstat_bin_dir, "fiveGraph", $thisInterface);
+                $width = 800;
+                if (isset($_COOKIE["width"])) {
+                    $width = $_COOKIE["width"];
+                }
+                $fiveGraph = getVnstatData($vnstat_cmd, "fiveGraph", $thisInterface, $width);
 
                 $fiveLargestValue = getLargestValue($fiveGraph);
                 $fiveSmallestValue = getSmallestValue($fiveGraph);
@@ -134,29 +169,41 @@ if (isset($_GET['i'])) {
                 title: 'Five minute Network Traffic',
                 subtitle: 'over last 6 hours',
                 orientation: 'horizontal',
-                hAxis: { direction: -1, format: 'H' },
+                bar: { groupWidth: '90%' },
+                chartArea: {
+                    left: 50,
+                    width: '85%'
+                },
+                hAxis: { 
+                    direction: -1, 
+                    format: 'H', 
+                    minorGridlines: { count: 0 },
+                    title: 'Hour'
+                },
                 vAxis: {
-                    format: '##.## <?php echo $fiveLargestPrefix; ?>',
+                    format: '###.####<?php echo $fiveLargestPrefix; ?>',
+                    textStyle: { fontSize: 12 },
                     scaleType: 'log',
                     baseline: <?php echo pow(10,floor(round(log10($fiveSmallestValue/pow(1024,$fiveMagnitude)),3))); ?>
                 }
             };
 
-            //var chart = new google.charts.Bar(document.getElementById('fiveNetworkTrafficGraph'));
-            var chart = new google.visualization.BarChart(document.getElementById('fiveNetworkTrafficGraph'));
-            //chart.draw(data, google.charts.Bar.convertOptions(options));
-            chart.draw(data, options);
+            if (data.getNumberOfRows() > 0) {
+                let chart = new google.visualization.BarChart(document.getElementById('fiveNetworkTrafficGraph'));
+                chart.draw(data, options);
+            }
         }
 
         function drawHourlyChart()
         {
             let data = google.visualization.arrayToDataTable([
-                ['Hour', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                [{type: 'datetime', label: 'Hour'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $hourlyGraph = getVnstatData($vnstat_bin_dir, "hourlyGraph", $thisInterface);
+                $hourlyGraph = getVnstatData($vnstat_cmd, "hourlyGraph", $thisInterface);
 
                 $hourlyLargestValue = getLargestValue($hourlyGraph);
                 $hourlyLargestPrefix = getLargestPrefix($hourlyLargestValue);
+                $hourlySmallestValue = getSmallestValue($hourlyGraph);
                 $hourlyMagnitude = getMagnitude($hourlyLargestValue);
 
                 for ($i = 0; $i < count($hourlyGraph); $i++) {
@@ -164,10 +211,6 @@ if (isset($_GET['i'])) {
                     $inTraffic = bytesToString($hourlyGraph[$i]['rx'], true, $hourlyMagnitude);
                     $outTraffic = bytesToString($hourlyGraph[$i]['tx'], true, $hourlyMagnitude);
                     $totalTraffic = bytesToString($hourlyGraph[$i]['total'], true, $hourlyMagnitude);
-
-                    if (($hourlyGraph[$i]['label'] == "12am") && ($hourlyGraph[$i]['time'] == "0")) {
-                        continue;
-                    }
 
                     if ($i == count($hourlyGraph) - 1) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
@@ -181,23 +224,40 @@ if (isset($_GET['i'])) {
             let options = {
                 title: 'Hourly Network Traffic',
                 subtitle: 'over last 24 hours',
-                vAxis: {format: '##.## <?php echo $hourlyLargestPrefix; ?>'}
+                orientation: 'horizontal',
+                bar: { groupWidth: '90%' },
+                chartArea: {
+                    left: 50,
+                    width: '85%'
+                },
+                hAxis: { 
+                    direction: -1, 
+                    format: 'd:H',
+                    title: 'Day:Hour'
+                },
+                vAxis: {
+                    format: '###.####<?php echo $hourlyLargestPrefix; ?>',
+                    textStyle: { fontSize: 12 },
+                    scaleType: 'log',
+                    baseline: <?php echo pow(10,floor(round(log10($hourlySmallestValue/pow(1024,$hourlyMagnitude)),3))); ?>
+                }
             };
 
-            let chart = new google.charts.Bar(document.getElementById('hourlyNetworkTrafficGraph'));
-            chart.draw(data, google.charts.Bar.convertOptions(options));
+            let chart = new google.visualization.BarChart(document.getElementById('hourlyNetworkTrafficGraph'));
+            chart.draw(data, options);
         }
 
         function drawDailyChart()
         {
             let data = google.visualization.arrayToDataTable([
-                ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                [{type: 'datetime', label: 'Date'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $dailyGraph = getVnstatData($vnstat_bin_dir, "dailyGraph", $thisInterface);
+                $dailyGraph = getVnstatData($vnstat_cmd, "dailyGraph", $thisInterface);
 
                 $dailyLargestValue = getLargestValue($dailyGraph);
                 $dailyLargestPrefix = getLargestPrefix($dailyLargestValue);
                 $dailyMagnitude = getMagnitude($dailyLargestValue);
+                $dailySmallestValue = getSmallestValue($dailyGraph);
 
                 for ($i = 0; $i < count($dailyGraph); $i++) {
                     $day = $dailyGraph[$i]['label'];
@@ -222,11 +282,27 @@ if (isset($_GET['i'])) {
             let options = {
                 title: 'Daily Network Traffic',
                 subtitle: 'over last 30 days (most recent first)',
-                vAxis: {format: '##.## <?php echo $dailyLargestPrefix; ?>'}
+                orientation: 'horizontal',
+                bar: { groupWidth: '90%' },
+                chartArea: {
+                    left: 50,
+                    width: '85%'
+                },
+                hAxis: { 
+                    direction: -1,
+                    format: 'M/d',
+                    title: 'Date: Month/Day'
+                },
+                vAxis: {
+                    format: '###.####<?php echo $dailyLargestPrefix; ?>',
+                    textStyle: { fontSize: 12 },
+                    scaleType: 'log',
+                    baseline: <?php echo pow(10,floor(round(log10($dailySmallestValue/pow(1024,$dailyMagnitude)),3))); ?>
+                }
             };
 
-            let chart = new google.charts.Bar(document.getElementById('dailyNetworkTrafficGraph'));
-            chart.draw(data, google.charts.Bar.convertOptions(options));
+            let chart = new google.visualization.BarChart(document.getElementById('dailyNetworkTrafficGraph'));
+            chart.draw(data, options);
         }
 
         function drawMonthlyChart()
@@ -234,7 +310,7 @@ if (isset($_GET['i'])) {
             let data = google.visualization.arrayToDataTable([
                 ['Month', 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
-                $monthlyGraph = getVnstatData($vnstat_bin_dir, "monthlyGraph", $thisInterface);
+                $monthlyGraph = getVnstatData($vnstat_cmd, "monthlyGraph", $thisInterface);
 
                 $monthlyLargestValue = getLargestValue($monthlyGraph);
                 $monthlyLargestPrefix = getLargestPrefix($monthlyLargestValue);
@@ -268,6 +344,13 @@ if (isset($_GET['i'])) {
     </script>
 </head>
 <body>
+<style>
+   .container{
+     width: 100%;
+     margin: 0 auto;
+   }
+</style>
+
 <div class="container">
     <div class="page-header">
         <h1>Network Traffic (<?php echo $interface_name[$thisInterface]; ?>)</h1> <?php printOptions(); ?>
@@ -277,27 +360,29 @@ if (isset($_GET['i'])) {
 <div id="graphTabNav" class="container">
     <ul class="nav nav-tabs">
         <li class="active">
-            <a href="#fiveGraph" data-toggle="tab">5Min</a></li>
-        <li><a href="#hourlyGraph" data-toggle="tab">Hourly</a></li>
+        <?php if ($version > 1) { echo "<a href=\"#fiveGraph\" data-toggle=\"tab\">5Min</a></li> <li>"; } ?>
+            <a href="#hourlyGraph" data-toggle="tab">Hourly</a></li>
         <li><a href="#dailyGraph" data-toggle="tab">Daily</a></li>
         <li><a href="#monthlyGraph" data-toggle="tab">Monthly</a></li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane active" id="fiveGraph">
-            <div id="fiveNetworkTrafficGraph" style="height: 300px;"></div>
+        <?php if ($version > 1) { echo "
+        <div class=\"tab-pane active\" id=\"fiveGraph\">
+            <div id=\"fiveNetworkTrafficGraph\" style=\"height: 400px;\"></div>
         </div>
+        "; } ?>
 
-        <div class="tab-pane" id="hourlyGraph">
-            <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
+        <div class=<?php if ($version == 1) {echo "\"tab-pane active\"";} else {echo "\"tab-pane\"";} ?> id="hourlyGraph">
+            <div id="hourlyNetworkTrafficGraph" style="height: 400px;"></div>
         </div>
 
         <div class="tab-pane" id="dailyGraph">
-            <div id="dailyNetworkTrafficGraph" style="height: 300px;"></div>
+            <div id="dailyNetworkTrafficGraph" style="height: 400px;"></div>
         </div>
 
         <div class="tab-pane" id="monthlyGraph">
-            <div id="monthlyNetworkTrafficGraph" style="height: 300px;"></div>
+            <div id="monthlyNetworkTrafficGraph" style="height: 400px;"></div>
         </div>
     </div>
 </div>
@@ -305,28 +390,30 @@ if (isset($_GET['i'])) {
 <div id="tabNav" class="container">
     <ul class="nav nav-tabs">
         <li class="active">
-            <a href="#five" data-toggle="tab">5Min</a></li>
-        <li><a href="#hourly" data-toggle="tab">Hourly</a></li>
+        <?php if ($version > 1) { echo "<a href=\"#five\" data-toggle=\"tab\">5Min</a></li> <li>"; } ?>
+            <a href="#hourly" data-toggle="tab">Hourly</a></li>
         <li><a href="#daily" data-toggle="tab">Daily</a></li>
         <li><a href="#monthly" data-toggle="tab">Monthly</a></li>
         <li><a href="#top10" data-toggle="tab">Top 10</a></li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane active" id="five">
-            <?php printTableStats($vnstat_bin_dir, "five", $thisInterface, 'Time') ?>
-        </div>
-        <div class="tab-pane" id="hourly">
-            <?php printTableStats($vnstat_bin_dir, "hourly", $thisInterface, 'Hour') ?>
+        <?php if ($version > 1) { echo "
+        <div class=\"tab-pane active\" id=\"five\">";
+            printTableStats($vnstat_cmd, "five", $thisInterface, 'Time');
+        echo "</div>"; } ?>
+
+        <div class=<?php if ($version == 1) {echo "\"tab-pane active\"";} else {echo "\"tab-pane\"";} ?> id="hourly">
+            <?php printTableStats($vnstat_cmd, "hourly", $thisInterface, 'Hour') ?>
         </div>
         <div class="tab-pane" id="daily">
-            <?php printTableStats($vnstat_bin_dir, "daily", $thisInterface, 'Day') ?>
+            <?php printTableStats($vnstat_cmd, "daily", $thisInterface, 'Day') ?>
         </div>
         <div class="tab-pane" id="monthly">
-            <?php printTableStats($vnstat_bin_dir, "monthly", $thisInterface, 'Month') ?>
+            <?php printTableStats($vnstat_cmd, "monthly", $thisInterface, 'Month') ?>
         </div>
         <div class="tab-pane" id="top10">
-            <?php printTableStats($vnstat_bin_dir, "top10", $thisInterface, 'Top 10') ?>
+            <?php printTableStats($vnstat_cmd, "top10", $thisInterface, 'Top 10') ?>
         </div>
     </div>
 </div>

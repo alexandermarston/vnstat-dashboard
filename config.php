@@ -23,6 +23,9 @@ date_default_timezone_set('Europe/London');
 // Path of vnstat
 $vnstat_bin_dir = '/usr/bin/vnstat';
 
+// Uncomment to override default config file
+//$vnstat_config = '/etc/vnstat.conf';
+
 // Set to true to set your own interfaces
 $use_predefined_interfaces = false;
 
