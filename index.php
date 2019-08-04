@@ -171,7 +171,7 @@ if (isset($vnstat_config)) {
                 orientation: 'horizontal',
                 bar: { groupWidth: '90%' },
                 chartArea: {
-                    left: 60,
+                    left: 50,
                     width: '85%'
                 },
                 hAxis: { 
@@ -181,7 +181,8 @@ if (isset($vnstat_config)) {
                     title: 'Hour'
                 },
                 vAxis: {
-                    format: '##.## <?php echo $fiveLargestPrefix; ?>',
+                    format: '###.####<?php echo $fiveLargestPrefix; ?>',
+                    textStyle: { fontSize: 12 },
                     scaleType: 'log',
                     baseline: <?php echo pow(10,floor(round(log10($fiveSmallestValue/pow(1024,$fiveMagnitude)),3))); ?>
                 }
@@ -226,7 +227,7 @@ if (isset($vnstat_config)) {
                 orientation: 'horizontal',
                 bar: { groupWidth: '90%' },
                 chartArea: {
-                    left: 60,
+                    left: 50,
                     width: '85%'
                 },
                 hAxis: { 
@@ -235,7 +236,8 @@ if (isset($vnstat_config)) {
                     title: 'Day:Hour'
                 },
                 vAxis: {
-                    format: '##.## <?php echo $hourlyLargestPrefix; ?>',
+                    format: '###.####<?php echo $hourlyLargestPrefix; ?>',
+                    textStyle: { fontSize: 12 },
                     scaleType: 'log',
                     baseline: <?php echo pow(10,floor(round(log10($hourlySmallestValue/pow(1024,$hourlyMagnitude)),3))); ?>
                 }
@@ -248,13 +250,14 @@ if (isset($vnstat_config)) {
         function drawDailyChart()
         {
             let data = google.visualization.arrayToDataTable([
-                ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+                [{type: 'datetime', label: 'Date'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
                 $dailyGraph = getVnstatData($vnstat_cmd, "dailyGraph", $thisInterface);
 
                 $dailyLargestValue = getLargestValue($dailyGraph);
                 $dailyLargestPrefix = getLargestPrefix($dailyLargestValue);
                 $dailyMagnitude = getMagnitude($dailyLargestValue);
+                $dailySmallestValue = getSmallestValue($dailyGraph);
 
                 for ($i = 0; $i < count($dailyGraph); $i++) {
                     $day = $dailyGraph[$i]['label'];
@@ -279,11 +282,27 @@ if (isset($vnstat_config)) {
             let options = {
                 title: 'Daily Network Traffic',
                 subtitle: 'over last 30 days (most recent first)',
-                vAxis: {format: '##.## <?php echo $dailyLargestPrefix; ?>'}
+                orientation: 'horizontal',
+                bar: { groupWidth: '90%' },
+                chartArea: {
+                    left: 50,
+                    width: '85%'
+                },
+                hAxis: { 
+                    direction: -1,
+                    format: 'M/d',
+                    title: 'Date: Month/Day'
+                },
+                vAxis: {
+                    format: '###.####<?php echo $dailyLargestPrefix; ?>',
+                    textStyle: { fontSize: 12 },
+                    scaleType: 'log',
+                    baseline: <?php echo pow(10,floor(round(log10($dailySmallestValue/pow(1024,$dailyMagnitude)),3))); ?>
+                }
             };
 
-            let chart = new google.charts.Bar(document.getElementById('dailyNetworkTrafficGraph'));
-            chart.draw(data, google.charts.Bar.convertOptions(options));
+            let chart = new google.visualization.BarChart(document.getElementById('dailyNetworkTrafficGraph'));
+            chart.draw(data, options);
         }
 
         function drawMonthlyChart()
@@ -350,20 +369,20 @@ if (isset($vnstat_config)) {
     <div class="tab-content">
         <?php if ($version > 1) { echo "
         <div class=\"tab-pane active\" id=\"fiveGraph\">
-            <div id=\"fiveNetworkTrafficGraph\" style=\"height: 300px;\"></div>
+            <div id=\"fiveNetworkTrafficGraph\" style=\"height: 400px;\"></div>
         </div>
         "; } ?>
 
         <div class=<?php if ($version == 1) {echo "\"tab-pane active\"";} else {echo "\"tab-pane\"";} ?> id="hourlyGraph">
-            <div id="hourlyNetworkTrafficGraph" style="height: 300px;"></div>
+            <div id="hourlyNetworkTrafficGraph" style="height: 400px;"></div>
         </div>
 
         <div class="tab-pane" id="dailyGraph">
-            <div id="dailyNetworkTrafficGraph" style="height: 300px;"></div>
+            <div id="dailyNetworkTrafficGraph" style="height: 400px;"></div>
         </div>
 
         <div class="tab-pane" id="monthlyGraph">
-            <div id="monthlyNetworkTrafficGraph" style="height: 300px;"></div>
+            <div id="monthlyNetworkTrafficGraph" style="height: 400px;"></div>
         </div>
     </div>
 </div>

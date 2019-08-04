@@ -43,7 +43,7 @@ function bytesToString($bytes, $wSuf = false, $magnitude = null)
     }
 
     if ($wSuf == true) {
-        return sprintf("%0.4f", ($bytes / pow(1024, $ui)));
+        return sprintf("%0.6f", ($bytes / pow(1024, $ui)));
     } else {
         return sprintf("%0.2f %s", ($bytes / pow(1024, $ui)), $units[$ui]);
     }
@@ -102,7 +102,7 @@ function getSmallestValue($array)
 
 function getLargestPrefix($bytes)
 {
-    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $units = ['B', 'K', 'M', 'G', 'T'];
 
     return $units[getMagnitude($bytes)];
 }
@@ -164,7 +164,7 @@ function getVnstatData($path, $type, $interface, $width = 800)
     if( $version > 1 ){
     $i = 0;
     $j = 0;
-    $duration = floor(($width-200)/7);
+    $duration = floor(($width-200)/9);
     if ($duration < 40) { $duration = 40; }
     $duration = $duration * 180;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['fiveminute'] as $min) {
@@ -204,7 +204,7 @@ function getVnstatData($path, $type, $interface, $width = 800)
             $daily[$i]['total'] = bytesToString($day['rx'] + $day['tx']);
             $daily[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
 
-            $dailyGraph[$i]['label'] = date('jS', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
+            $dailyGraph[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d)",$day['date']['year'],$day['date']['month']-1,$day['date']['day'],0,0);
             $dailyGraph[$i]['rx'] = $day['rx'];
             $dailyGraph[$i]['tx'] = $day['tx'];
             $dailyGraph[$i]['total'] = ($day['rx'] + $day['tx']);
