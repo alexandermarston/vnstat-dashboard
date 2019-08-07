@@ -76,11 +76,11 @@ function getLargestValue($array)
     });
 }
 
-function getSmallestValue($array)
+function getBaseValue($array, $magnitude)
 {
     global $terraB;
 
-    $max = array_reduce($array, function ($a, $b) {
+    $sml = array_reduce($array, function ($a, $b) {
         if  ((0 < $b['rx']) && ($b['rx'] < $b['tx'])) {
             $sml = $b['rx'];
         } else {
@@ -93,11 +93,21 @@ function getSmallestValue($array)
         }
     }, $terraB);
 
-    if ($max < $terraB) {
-        return $max;
+    if ($sml >= $terraB) {
+        $sml = 1;
     }
 
-    return 1;
+    $base = pow(10,floor(round(log10($sml/pow(1024,$magnitude)),3)));
+    $baseByte = $base * pow(1024, $magnitude);
+    // if really close to smallest value use half so you can see the bar
+    if ($baseByte * 1.2 > $sml) {
+        $base = $base / 2;
+    // if smallest val is more than 6 times, use 5 times
+    } else if ($baseByte * 6 < $sml) {
+        $base = 5 * $base;
+    }
+
+    return $base;
 }
 
 function getLargestPrefix($bytes)
@@ -107,7 +117,7 @@ function getLargestPrefix($bytes)
     return $units[getMagnitude($bytes)];
 }
 
-function getVnstatData($path, $type, $interface, $width = 800)
+function getVnstatData($path, $type, $interface)
 {
     global $version;
 
@@ -163,10 +173,6 @@ function getVnstatData($path, $type, $interface, $width = 800)
 
     if( $version > 1 ){
     $i = 0;
-    $j = 0;
-    $duration = floor(($width-200)/9);
-    if ($duration < 40) { $duration = 40; }
-    $duration = $duration * 180;
     foreach ($vnstatDecoded['interfaces'][0]['traffic']['fiveminute'] as $min) {
         if (is_array($min)) {
             ++$i;
@@ -178,16 +184,11 @@ function getVnstatData($path, $type, $interface, $width = 800)
             $five[$i]['total'] = bytesToString($min['rx'] + $min['tx']);
             $five[$i]['time'] = mktime($min['time']['hour'], $min['time']['minute'], 0, $min['date']['month'], $min['date']['day'], $min['date']['year']);
 
-            if (time() - $five[$i]['time'] > $duration) {
-                continue;
-            }
-            ++$j;
-
-            $fiveGraph[$j]['label'] = sprintf("Date(%d, %d, %d, %d, %d)",$min['date']['year'],$min['date']['month']-1,$min['date']['day'],$min['time']['hour'],$min['time']['minute']);
-            $fiveGraph[$j]['rx'] = $min['rx'];
-            $fiveGraph[$j]['tx'] = $min['tx'];
-            $fiveGraph[$j]['total'] = ($min['rx'] + $min['tx']);
-            $fiveGraph[$j]['time'] = mktime($min['time']['hour'], $min['time']['minute'], 0, $min['date']['month'], $min['date']['day'], $min['date']['year']);
+            $fiveGraph[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d)",$min['date']['year'],$min['date']['month']-1,$min['date']['day'],$min['time']['hour'],$min['time']['minute']);
+            $fiveGraph[$i]['rx'] = $min['rx'];
+            $fiveGraph[$i]['tx'] = $min['tx'];
+            $fiveGraph[$i]['total'] = ($min['rx'] + $min['tx']);
+            $fiveGraph[$i]['time'] = mktime($min['time']['hour'], $min['time']['minute'], 0, $min['date']['month'], $min['date']['day'], $min['date']['year']);
         }
     }
     }
@@ -292,11 +293,11 @@ function getVnstatData($path, $type, $interface, $width = 800)
         case "five":
             return $five;
         case "hourlyGraph":
-            return array_slice($hourlyGraph, 0, 24, true);
+            return $hourlyGraph;
         case "hourly":
             return $hourly;
         case "dailyGraph":
-            return array_slice($dailyGraph, 0, 30, true);
+            return $dailyGraph;
         case "daily":
             return $daily;
         case "monthlyGraph":

@@ -140,19 +140,30 @@ if (isset($vnstat_config)) {
                 if (isset($_COOKIE["width"])) {
                     $width = $_COOKIE["width"];
                 }
-                $fiveGraph = getVnstatData($vnstat_cmd, "fiveGraph", $thisInterface, $width);
+
+                // get duration in seconds for initial display based on screen width
+                $duration = floor(($width-200)/16); // number of samples
+                if ($duration < 24) { $duration = 24; } // minimum of 24 bar groups = 2 hours
+                $duration = $duration * 300; // in seconds
+
+                $fiveGraph = getVnstatData($vnstat_cmd, "fiveGraph", $thisInterface);
 
                 $fiveLargestValue = getLargestValue($fiveGraph);
-                $fiveSmallestValue = getSmallestValue($fiveGraph);
                 $fiveLargestPrefix = getLargestPrefix($fiveLargestValue);
                 $fiveMagnitude = getMagnitude($fiveLargestValue);
+                $fiveBase = getBaseValue($fiveGraph, $fiveMagnitude);
                 $first = true;
+                $lastSample = 0;
 
                 for ($i = 0; $i < count($fiveGraph); $i++) {
                     $time = $fiveGraph[$i]['label'];
                     $inTraffic = bytesToString($fiveGraph[$i]['rx'], true, $fiveMagnitude);
                     $outTraffic = bytesToString($fiveGraph[$i]['tx'], true, $fiveMagnitude);
                     $totalTraffic = bytesToString($fiveGraph[$i]['total'], true, $fiveMagnitude);
+                    // can't just use duration/300 - there might be fewer or missing samples
+                    if ($fiveGraph[0]['time'] - $fiveGraph[$i]['time'] < $duration) {
+                        $lastSample = $i;
+                    }
 
                     if ($first) {
                         $first = false;
@@ -169,22 +180,28 @@ if (isset($vnstat_config)) {
                 title: 'Five minute Network Traffic',
                 subtitle: 'over last 6 hours',
                 orientation: 'horizontal',
-                bar: { groupWidth: '90%' },
+                bar: { groupWidth: '85%' },
+                explorer: { axis: 'horizontal', zoomDelta: 1.1, maxZoomIn: 0.10, maxZoomOut: 10 },
+                legend: { position: 'bottom' },
                 chartArea: {
                     left: 50,
-                    width: '85%'
+                    width: '95%'
                 },
                 hAxis: { 
                     direction: -1, 
-                    format: 'H', 
+                    format: 'H:mm', 
                     minorGridlines: { count: 0 },
-                    title: 'Hour'
+                    title: 'Hour:Minute',
+                    viewWindow: {
+                        min: new <?php echo $fiveGraph[$lastSample]['label']; ?>,
+                        max: new <?php echo $fiveGraph[0]['label']; ?>
+                    }
                 },
                 vAxis: {
                     format: '###.####<?php echo $fiveLargestPrefix; ?>',
                     textStyle: { fontSize: 12 },
                     scaleType: 'log',
-                    baseline: <?php echo pow(10,floor(round(log10($fiveSmallestValue/pow(1024,$fiveMagnitude)),3))); ?>
+                    baseline: <?php echo $fiveBase; ?>
                 }
             };
 
@@ -199,18 +216,34 @@ if (isset($vnstat_config)) {
             let data = google.visualization.arrayToDataTable([
                 [{type: 'datetime', label: 'Hour'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
+                $width = 800;
+                if (isset($_COOKIE["width"])) {
+                    $width = $_COOKIE["width"];
+                }
+
+                // get duration in seconds for initial display based on screen width
+                $duration = floor(($width-200)/32); // number of samples
+                if ($duration < 24) { $duration = 24; } // minimum of 24 bar groups = 1 day
+                $duration = $duration * 3600; // in seconds
+
                 $hourlyGraph = getVnstatData($vnstat_cmd, "hourlyGraph", $thisInterface);
 
                 $hourlyLargestValue = getLargestValue($hourlyGraph);
                 $hourlyLargestPrefix = getLargestPrefix($hourlyLargestValue);
-                $hourlySmallestValue = getSmallestValue($hourlyGraph);
                 $hourlyMagnitude = getMagnitude($hourlyLargestValue);
+                $hourlyBaseValue = getBaseValue($hourlyGraph, $hourlyMagnitude);
+                $lastSample = 0;
 
                 for ($i = 0; $i < count($hourlyGraph); $i++) {
                     $hour = $hourlyGraph[$i]['label'];
                     $inTraffic = bytesToString($hourlyGraph[$i]['rx'], true, $hourlyMagnitude);
                     $outTraffic = bytesToString($hourlyGraph[$i]['tx'], true, $hourlyMagnitude);
                     $totalTraffic = bytesToString($hourlyGraph[$i]['total'], true, $hourlyMagnitude);
+
+                    // can't just use duration/3600 - there might be fewer or missing samples
+                    if ($hourlyGraph[0]['time'] - $hourlyGraph[$i]['time'] < $duration) {
+                        $lastSample = $i;
+                    }
 
                     if ($i == count($hourlyGraph) - 1) {
                         echo("['" . $hour . "', " . $inTraffic . " , " . $outTraffic . ", " . $totalTraffic . "]\n");
@@ -225,21 +258,28 @@ if (isset($vnstat_config)) {
                 title: 'Hourly Network Traffic',
                 subtitle: 'over last 24 hours',
                 orientation: 'horizontal',
-                bar: { groupWidth: '90%' },
+                bar: { groupWidth: '85%' },
+                explorer: { axis: 'horizontal', zoomDelta: 1.1, maxZoomIn: 0.10, maxZoomOut: 10 },
+                legend: { position: 'bottom' },
                 chartArea: {
                     left: 50,
-                    width: '85%'
+                    width: '95%'
                 },
                 hAxis: { 
                     direction: -1, 
-                    format: 'd:H',
-                    title: 'Day:Hour'
+                    format: 'd:H', 
+                    minorGridlines: { count: 0 },
+                    title: 'Day:Hour',
+                    viewWindow: {
+                        min: new <?php echo $hourlyGraph[$lastSample]['label']; ?>,
+                        max: new <?php echo $hourlyGraph[0]['label']; ?>
+                    }
                 },
                 vAxis: {
                     format: '###.####<?php echo $hourlyLargestPrefix; ?>',
                     textStyle: { fontSize: 12 },
                     scaleType: 'log',
-                    baseline: <?php echo pow(10,floor(round(log10($hourlySmallestValue/pow(1024,$hourlyMagnitude)),3))); ?>
+                    baseline: <?php echo $hourlyBaseValue; ?>
                 }
             };
 
@@ -252,12 +292,23 @@ if (isset($vnstat_config)) {
             let data = google.visualization.arrayToDataTable([
                 [{type: 'datetime', label: 'Date'}, 'Traffic In', 'Traffic Out', 'Total Traffic'],
                 <?php
+                $width = 800;
+                if (isset($_COOKIE["width"])) {
+                    $width = $_COOKIE["width"];
+                }
+
+                // get duration in seconds for initial display based on screen width
+                $duration = floor(($width-200)/32); // number of samples
+                if ($duration < 30) { $duration = 30; } // minimum of 30 bar groups = 1 month
+                $duration = $duration * 3600 * 24; // in seconds
+
                 $dailyGraph = getVnstatData($vnstat_cmd, "dailyGraph", $thisInterface);
 
                 $dailyLargestValue = getLargestValue($dailyGraph);
                 $dailyLargestPrefix = getLargestPrefix($dailyLargestValue);
                 $dailyMagnitude = getMagnitude($dailyLargestValue);
-                $dailySmallestValue = getSmallestValue($dailyGraph);
+                $dailyBaseValue = getBaseValue($dailyGraph, $dailyMagnitude);
+                $lastSample = 0;
 
                 for ($i = 0; $i < count($dailyGraph); $i++) {
                     $day = $dailyGraph[$i]['label'];
@@ -265,8 +316,9 @@ if (isset($vnstat_config)) {
                     $outTraffic = bytesToString($dailyGraph[$i]['tx'], true, $dailyMagnitude);
                     $totalTraffic = bytesToString($dailyGraph[$i]['total'], true, $dailyMagnitude);
 
-                    if ($dailyGraph[$i]['time'] == "0") {
-                        continue;
+                    // can't just use duration/x - there might be fewer or missing samples
+                    if ($dailyGraph[0]['time'] - $dailyGraph[$i]['time'] < $duration) {
+                        $lastSample = $i;
                     }
 
                     if ($i == count($dailyGraph)- 1) {
@@ -283,21 +335,28 @@ if (isset($vnstat_config)) {
                 title: 'Daily Network Traffic',
                 subtitle: 'over last 30 days (most recent first)',
                 orientation: 'horizontal',
-                bar: { groupWidth: '90%' },
+                bar: { groupWidth: '85%' },
+                explorer: { axis: 'horizontal', zoomDelta: 1.1, maxZoomIn: 0.10, maxZoomOut: 10 },
+                legend: { position: 'bottom' },
                 chartArea: {
                     left: 50,
-                    width: '85%'
+                    width: '95%'
                 },
                 hAxis: { 
-                    direction: -1,
-                    format: 'M/d',
-                    title: 'Date: Month/Day'
+                    direction: -1, 
+                    format: 'M/d', 
+                    //minorGridlines: { count: 0 },
+                    title: 'Date: Month/Day',
+                    viewWindow: {
+                        min: new <?php echo $dailyGraph[$lastSample]['label']; ?>,
+                        max: new <?php echo $dailyGraph[0]['label']; ?>
+                    }
                 },
                 vAxis: {
                     format: '###.####<?php echo $dailyLargestPrefix; ?>',
                     textStyle: { fontSize: 12 },
                     scaleType: 'log',
-                    baseline: <?php echo pow(10,floor(round(log10($dailySmallestValue/pow(1024,$dailyMagnitude)),3))); ?>
+                    baseline: <?php echo $dailyBaseValue; ?>
                 }
             };
 
