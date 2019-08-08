@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Disable error reporting
+error_reporting(0);
+
 // Set the default system Timezone
 date_default_timezone_set('Europe/London');
 

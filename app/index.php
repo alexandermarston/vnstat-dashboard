@@ -227,7 +227,7 @@ if (isset($_GET['i'])) {
             <a class="nav-link active" id="hourly-graph-tab" data-toggle="tab" href="#hourly-graph" role="tab" aria-controls="hourly-graph" aria-selected="true">Hourly Graph</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="daily-graph-tab" data-toggle="tab" href="#daily-graph" role="tab" aria-controls="daily-graph" aria-selected="false">Daiily Graph</a>
+            <a class="nav-link" id="daily-graph-tab" data-toggle="tab" href="#daily-graph" role="tab" aria-controls="daily-graph" aria-selected="false">Daily Graph</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="monthly-graph-tab" data-toggle="tab" href="#monthly-graph" role="tab" aria-controls="monthly-graph" aria-selected="false">Monthly Graph</a>
@@ -261,7 +261,7 @@ if (isset($_GET['i'])) {
             <a class="nav-link" id="monthly-table-tab" data-toggle="tab" href="#monthly-table" role="tab" aria-controls="monthly-table" aria-selected="false">Monthly</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="top10-table-tab" data-toggle="tab" href="#top10=table" role="tab" aria-controls="top10-table" aria-selected="false">Top 10</a>
+            <a class="nav-link" id="top10-table-tab" data-toggle="tab" href="#top10-table" role="tab" aria-controls="top10-table" aria-selected="false">Top 10</a>
         </li>
     </ul>
 
@@ -275,7 +275,7 @@ if (isset($_GET['i'])) {
         <div class="tab-pane fade" id="monthly-table" role="tabpanel" aria-labelledby="monthly-table-tab">
             <?php printTableStats($vnstat_bin_dir, "monthly", $thisInterface, 'Month') ?>
         </div>
-        <div class="tab-pane fade" id="top-10-table" role="tabpanel" aria-labelledby="top10-table-tab">
+        <div class="tab-pane fade" id="top10-table" role="tabpanel" aria-labelledby="top10-table-tab">
             <?php printTableStats($vnstat_bin_dir, "top10", $thisInterface, 'Day') ?>
         </div>
     </div>
