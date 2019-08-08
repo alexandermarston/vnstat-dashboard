@@ -191,11 +191,13 @@ if (isset($vnstat_config)) {
                     direction: -1, 
                     format: 'H:mm', 
                     minorGridlines: { count: 0 },
-                    title: 'Hour:Minute',
-                    viewWindow: {
-                        min: new <?php echo $fiveGraph[$lastSample]['label']; ?>,
-                        max: new <?php echo $fiveGraph[0]['label']; ?>
-                    }
+                    title: 'Hour:Minute  Scroll to zoom, Drag to pan'
+                    <?php if (count($fiveGraph) > 0) {
+                        echo ", viewWindow: {";
+                        echo "min: new " . $fiveGraph[$lastSample]['label'] . ", ";
+                        echo "max: new " . $fiveGraph[0]['label'];
+                        echo "}";
+                    } ?>
                 },
                 vAxis: {
                     format: '###.####<?php echo $fiveLargestPrefix; ?>',
@@ -269,7 +271,7 @@ if (isset($vnstat_config)) {
                     direction: -1, 
                     format: 'd:H', 
                     minorGridlines: { count: 0 },
-                    title: 'Day:Hour',
+                    title: 'Day:Hour  Scroll to zoom, Drag to pan',
                     viewWindow: {
                         min: new <?php echo $hourlyGraph[$lastSample]['label']; ?>,
                         max: new <?php echo $hourlyGraph[0]['label']; ?>
@@ -346,7 +348,7 @@ if (isset($vnstat_config)) {
                     direction: -1, 
                     format: 'M/d', 
                     //minorGridlines: { count: 0 },
-                    title: 'Date: Month/Day',
+                    title: 'Month/Day  Scroll to zoom, Drag to pan',
                     viewWindow: {
                         min: new <?php echo $dailyGraph[$lastSample]['label']; ?>,
                         max: new <?php echo $dailyGraph[0]['label']; ?>
