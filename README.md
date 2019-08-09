@@ -15,7 +15,7 @@ This dashboard is an adaptation of vnstat-php-frontend by bjd using Bootstrap wr
 ``$ docker push amarston/vnstat-dashboard:latest``
 
 ### How to start it
-``$ docker run --name vnstat-dashboard -p 80:80 -d amarston/vnstat-dashboard:latest``
+``$ docker run --name vnstat-dashboard -p 80:80 -v /usr/bin/vnstat:/usr/bin/vnstat -v /var/lib/vnstat:/var/lib/vnstat -d amarston/vnstat-dashboard:latest``
 
 ### How to stop it
 ``$ docker stop vnstat-dashboard``
@@ -23,7 +23,11 @@ This dashboard is an adaptation of vnstat-php-frontend by bjd using Bootstrap wr
 ## Run it with Locally
 
 ### How to run it
-``$ cp -rp app/ /var/www/html/vnstat/``
+```
+$ cp -rp app/ /var/www/html/vnstat/
+$ cd /var/www/html/vnstat/
+$ composer install
+```
 
 ## Licensing
 Copyright (C) 2019 Alexander Marston (alexander.marston@gmail.com)
