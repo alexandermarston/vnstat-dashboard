@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
+ * Copyright (C) 2019 Alexander Marston (alexander.marston@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ function bytesToString($bytes, $wSuf = false, $magnitude = null)
     }
 
     if ($wSuf == true) {
-        return sprintf("%0.6f", ($bytes / pow(1024, $ui)));
+        return sprintf("%0.8f", ($bytes / pow(1024, $ui)));
     } else {
         return sprintf("%0.2f %s", ($bytes / pow(1024, $ui)), $units[$ui]);
     }
@@ -100,21 +100,28 @@ function getBaseValue($array, $magnitude)
     $base = pow(10,floor(round(log10($sml/pow(1024,$magnitude)),3)));
     $baseByte = $base * pow(1024, $magnitude);
     // if really close to smallest value use half so you can see the bar
-    if ($baseByte * 1.2 > $sml) {
-        $base = $base / 2;
-    // if smallest val is more than 6 times, use 5 times
-    } else if ($baseByte * 6 < $sml) {
-        $base = 5 * $base;
+
+    // google chart sometimes refuses to draw y axis units when base is 5*10^x
+
+    //if ($sml / $baseByte < 1.2) {
+    //    $base = $base / 2;
+    // if smallest val is more than 6 times, use 5 times so smallest bar is not so big
+    //} else if ($sml / $baseByte > 6 ) {
+    //    $base = 5 * $base;
+    //}
+
+    if ($sml / $baseByte < 1.05) {
+        $base = $base / 10;
     }
 
     return $base;
 }
 
-function getLargestPrefix($bytes)
+function getLargestPrefix($magnitude)
 {
     $units = ['B', 'K', 'M', 'G', 'T'];
 
-    return $units[getMagnitude($bytes)];
+    return $units[$magnitude];
 }
 
 function getVnstatData($path, $type, $interface)

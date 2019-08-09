@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
+ * Copyright (C) 2019 Alexander Marston (alexander.marston@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+// Disable error reporting
+error_reporting(0);
 
 // Set the default system Timezone
 date_default_timezone_set('Europe/London');
