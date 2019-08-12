@@ -1,5 +1,6 @@
     <script type="text/javascript">
-        google.charts.load('current', { 'packages': [ 'bar' ] });
+        google.charts.load('current', { packages: [ 'bar' ] });
+        google.charts.load("current", { packages: [ 'corechart' ] });
         google.charts.setOnLoadCallback(drawHourlyChart);
         google.charts.setOnLoadCallback(drawDailyChart);
         google.charts.setOnLoadCallback(drawMonthlyChart);
@@ -18,12 +19,22 @@
 
         function drawHourlyChart()
         {
-            let data = google.visualization.arrayToDataTable([
-                [{ type: 'datetime', label: 'Hour' }, 'Traffic In', 'Traffic Out', 'Total Traffic'],
+            var data = new google.visualization.DataTable();
+
+            data.addColumn('date', 'Hour');
+            data.addColumn('number', 'Traffic In');
+            data.addColumn('number', 'Traffic Out');
+            data.addColumn('number', 'Total Traffic');
+
+            data.addRows([
 {foreach from=$hourlyGraphData key=key item=value}
-                [new {$value.label}, formatBytes({$value.rx}, '{$hourlyLargestPrefix}'), formatBytes({$value.tx}, '{$hourlyLargestPrefix}'), formatBytes({$value.total}, '{$hourlyLargestPrefix}')],
+                [new {$value.label}, {$value.rx}, {$value.tx}, {$value.total}],
 {/foreach}
             ]);
+
+            data.sort({
+                column: 0
+            });
 
             let options = {
                 title: 'Hourly Network Traffic',
@@ -42,10 +53,16 @@
 
         function drawDailyChart()
         {
-            let data = google.visualization.arrayToDataTable([
-                ['Day', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+            var data = new google.visualization.DataTable();
+
+            data.addColumn('date', 'Day');
+            data.addColumn('number', 'Traffic In');
+            data.addColumn('number', 'Traffic Out');
+            data.addColumn('number', 'Total Traffic');
+
+            data.addRows([
 {foreach from=$dailyGraphData key=key item=value}
-                [new {$value.label}, formatBytes({$value.rx}, '{$dailyLargestPrefix}'), formatBytes({$value.tx}, '{$dailyLargestPrefix}'), formatBytes({$value.total}, '{$dailyLargestPrefix}')],
+                [new {$value.label}, {$value.rx}, {$value.tx}, {$value.total}],
 {/foreach}
             ]);
 
@@ -53,8 +70,13 @@
                 title: 'Daily Network Traffic',
                 subtitle: 'over last 29 days (most recent first)',
                 vAxis: { format: '##.## {$dailyLargestPrefix}' },
-                hAxis: { format: 'd/M/yy' }
+                hAxis: { format: 'dd/MM/YYYY' }
             };
+
+            data.sort({
+                column: 0,
+                desc: true
+            });
 
             let chart = new google.charts.Bar(document.getElementById('dailyNetworkTrafficGraph'));
             chart.draw(data, google.charts.Bar.convertOptions(options));
@@ -62,17 +84,30 @@
 
         function drawMonthlyChart()
         {
-            let data = google.visualization.arrayToDataTable([
-                ['Month', 'Traffic In', 'Traffic Out', 'Total Traffic'],
+            var data = new google.visualization.DataTable();
+
+            data.addColumn('date', 'Month');
+            data.addColumn('number', 'Traffic In');
+            data.addColumn('number', 'Traffic Out');
+            data.addColumn('number', 'Total Traffic');
+
+            data.addRows([
 {foreach from=$monthlyGraphData key=key item=value}
-                ['{$value.label}', formatBytes({$value.rx}, '{$monthlyLargestPrefix}'), formatBytes({$value.tx}, '{$monthlyLargestPrefix}'), formatBytes({$value.total}, '{$monthlyLargestPrefix}')],
+                [new {$value.label}, {$value.rx}, {$value.tx}, {$value.total}],
 {/foreach}
             ]);
+
+            data.sort({
+                column: 0,
+                desc: true
+            });
 
             let options = {
                 title: 'Monthly Network Traffic',
                 subtitle: 'over last 12 months',
-                vAxis: { format: '##.## {$monthlyLargestPrefix}' }
+                strictFirstColumnType: false,
+                vAxis: { format: '##.## {$monthlyLargestPrefix}' },
+                hAxis: { format: 'MMMM YYYY' },
             };
 
             let chart = new google.charts.Bar(document.getElementById('monthlyNetworkTrafficGraph'));

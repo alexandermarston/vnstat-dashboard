@@ -17,8 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Disable error reporting
-error_reporting(0);
+// Disable error reporting to screen
+/*ini_set('display_errors', 0);
+error_reporting(E_ALL);*/
 
 // Set the default system Timezone
 date_default_timezone_set('Europe/London');
@@ -34,10 +35,4 @@ if ($use_predefined_interfaces == true) {
 
     $interface_name['eth0'] = "Internal #1";
     $interface_name['eth1'] = "Internal #2";
-} else {
-    $interface_list = getVnstatInterfaces($vnstat_bin_dir);
-
-    foreach ($interface_list as $interface) {
-        $interface_name[$interface] = $interface;
-    }
 }

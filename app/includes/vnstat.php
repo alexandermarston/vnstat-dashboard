@@ -17,215 +17,207 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// $wSuf (without suffix MB, GB, etc)
-function kbytesToString($kb, $wSuf = false, $byte_notation = null)
-{
-    $units = ['TB', 'GB', 'MB', 'KB'];
-    $scale = 1024 * 1024 * 1024 * 1024;
-    $ui = 0;
+class vnStat {
+	protected $executablePath;
+	protected $vnstatVersion;
+	protected $vnstatJsonVersion;
+	protected $vnstatData;
 
-    $custom_size = isset($byte_notation) && in_array($byte_notation, $units);
+	public function __construct ($executablePath) {
+		if (isset($executablePath)) {
+			$this->executablePath = $executablePath;
 
-    while ((($kb < $scale) && ($scale > 1)) || $custom_size) {
+			// Execute a command to output a json dump of the vnstat data
+			$vnstatStream = popen("$this->executablePath --json", 'r');
 
-        if ($custom_size && $units[$ui] == $byte_notation) {
-            break;
-        }
-        $ui++;
-        $scale = $scale / 1024;
-    }
+			// Is the stream valid?
+			if (is_resource($vnstatStream)) {
+				$streamBuffer = '';
 
-    if ($wSuf == true) {
-        return sprintf("%0.2f", ($kb / $scale));
-    } else {
-        return sprintf("%0.2f %s", ($kb / $scale), $units[$ui]);
-    }
+				while (!feof($vnstatStream)) {
+					$streamBuffer .= fgets($vnstatStream);
+				}
+
+				// Close the handle
+				pclose($vnstatStream);
+
+				$this->processVnstatData($streamBuffer);
+			} else {
+
+			}
+
+
+		} else {
+			die();
+		}
+	}
+
+	private function processVnstatData($vnstatJson) {
+		$decodedJson = json_decode($vnstatJson, true);
+
+		// Check the JSON is valid
+		if (json_last_error() != JSON_ERROR_NONE) {
+			throw new Exception('JSON is invalid');
+		}
+
+		$this->vnstatData = $decodedJson;
+		$this->vnstatVersion = $decodedJson['vnstatversion'];
+		$this->vnstatJsonVersion = $decodedJson['jsonversion'];
+	}
+
+	public function getVnstatVersion() {
+		return $this->vnstatVersion;
+	}
+
+	public function getVnstatJsonVersion() {
+		return $this->vnstatJsonVersion;
+	}
+
+	public function getInterfaces() {
+		// Create a placeholder array
+		$vnstatInterfaces = [];
+
+		foreach($this->vnstatData['interfaces'] as $interface) {
+			array_push($vnstatInterfaces, $interface['id']);
+		}
+
+		return $vnstatInterfaces;
+	}
+
+	public function getInterfaceData($timeperiod, $type, $interface) {
+		// If json version equals 1, add an 's' onto the end of each type.
+		// e.g. 'top' becomes 'tops'
+		if ($this->vnstatJsonVersion == 1) {
+			$typeAppend = 's';
+		}
+
+		// Blank placeholder
+		$trafficData = [];
+
+		// Get the array index for the chosen interface
+		$arrayIndex = array_search($interface, array_column($this->vnstatData['interfaces'], 'id'));
+ 
+		if ($timeperiod == 'top10') {
+			if ($type == 'table') {
+				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['top'.$typeAppend] as $traffic) {
+					if (is_array($traffic)) {
+						$i++;
+
+						$trafficData[$i]['label'] = date('d/m/Y', strtotime($traffic['date']['month'] . "/" . $traffic['date']['day'] . "/" . $traffic['date']['year']));;
+						$trafficData[$i]['rx'] = formatSize($traffic['rx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['tx'] = formatSize($traffic['tx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
+                                                $trafficData[$i]['totalraw'] = ($traffic['rx'] + $traffic['tx']);
+					}
+				}
+			}
+		}
+
+		if ($timeperiod == 'hourly') {
+			if ($type == 'table') {
+				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['hour'.$typeAppend] as $traffic) {
+					if (is_array($traffic)) {
+						$i++;
+
+                                                if ($this->vnstatJsonVersion == 1) {
+                                                    $hour = $traffic['id'];
+                                                } else {
+                                                    $hour = $traffic['time']['hour'];
+                                                }
+
+						$trafficData[$i]['label'] = date("d/m/Y g:i", mktime($hour, 0, 0, $traffic['date']['month'], $traffic['date']['day'], $traffic['date']['year']));
+						$trafficData[$i]['rx'] = formatSize($traffic['rx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['tx'] = formatSize($traffic['tx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
+					}
+				}
+			} else if ($type == 'graph') {
+				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['hour'.$typeAppend] as $traffic) {
+					if (is_array($traffic)) {
+						$i++;
+
+                                                if ($this->vnstatJsonVersion == 1) {
+                                                    $hour = $traffic['id'];
+                                                } else {
+                                                    $hour = $traffic['time']['hour'];
+                                                }
+
+						$trafficData[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d, %d)", $traffic['date']['year'], $traffic['date']['month']-1, $traffic['date']['day'], $hour, 0, 0);
+						$trafficData[$i]['rx'] = kibibytesToBytes($traffic['rx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['tx'] = kibibytesToBytes($traffic['tx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['total'] = kibibytesToBytes(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
+					}
+				}
+			}
+		}
+
+		if ($timeperiod == 'daily') {
+			if ($type == 'table') {
+				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['day'.$typeAppend] as $traffic) {
+					if (is_array($traffic)) {
+						$i++;
+
+						$trafficData[$i]['label'] = date('d/m/Y', mktime(0, 0, 0, $traffic['date']['month'], $traffic['date']['day'], $traffic['date']['year']));
+						$trafficData[$i]['rx'] = formatSize($traffic['rx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['tx'] = formatSize($traffic['tx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
+					}
+				}
+			} else if ($type == 'graph') {
+				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['day'.$typeAppend] as $traffic) {
+					if (is_array($traffic)) {
+						$i++;
+
+						$trafficData[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d, %d)", $traffic['date']['year'], $traffic['date']['month']-1, $traffic['date']['day'], 0, 0, 0);
+						$trafficData[$i]['rx'] = kibibytesToBytes($traffic['rx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['tx'] = kibibytesToBytes($traffic['tx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['total'] = kibibytesToBytes(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
+					}
+				}
+			}
+		}
+
+		if ($timeperiod == 'monthly') {
+			if ($type == 'table') {
+				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['month'.$typeAppend] as $traffic) {
+					if (is_array($traffic)) {
+						$i++;
+
+						$trafficData[$i]['label'] = date('F Y', mktime(0, 0, 0, $traffic['date']['month'], 10, $traffic['date']['year']));
+						$trafficData[$i]['rx'] = formatSize($traffic['rx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['tx'] = formatSize($traffic['tx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
+					}
+				}
+			} else if ($type == 'graph') {
+				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['month'.$typeAppend] as $traffic) {
+					if (is_array($traffic)) {
+						$i++;
+
+                                                $trafficData[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d, %d)", $traffic['date']['year'], $traffic['date']['month'] - 1, 10, 0, 0, 0);
+						$trafficData[$i]['rx'] = kibibytesToBytes($traffic['rx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['tx'] = kibibytesToBytes($traffic['tx'], $this->vnstatJsonVersion);
+						$trafficData[$i]['total'] = kibibytesToBytes(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
+					}
+				}
+			}
+		}
+
+                if ($type == 'graph') {
+                    // Get the largest value and then prefix (B, KB, MB, GB, etc)
+                    $trafficLargestValue = getLargestValue($trafficData);
+                    $trafficLargestPrefix = getLargestPrefix($trafficLargestValue);
+
+                    foreach($trafficData as $key => $value) {
+                        $trafficData[$key]['rx'] = formatBytesTo($value['rx'], $trafficLargestPrefix);
+                        $trafficData[$key]['tx'] = formatBytesTo($value['tx'], $trafficLargestPrefix);
+                        $trafficData[$key]['total'] = formatBytesTo($value['total'], $trafficLargestPrefix);
+                        $trafficData[$key]['delimiter'] = $trafficLargestPrefix;
+                    }
+                }
+
+		return $trafficData;
+	}
 }
 
-function getVnstatInterfaces($path)
-{
-    $vnstat_interfaces = []; // Create an empty array
-
-    $vnstatIF = popen("$path --iflist", "r");
-    if (is_resource($vnstatIF)) {
-        $iBuffer = '';
-        while (!feof($vnstatIF)) {
-            $iBuffer .= fgets($vnstatIF);
-        }
-
-        $vnstat_temp = preg_replace("/\s+/", " ", preg_replace("/\([^)]+\)/", "", trim(str_replace("Available interfaces: ", "", $iBuffer))));
-
-        $vnstat_interfaces = explode(" ", $vnstat_temp);
-        pclose($vnstatIF);
-    }
-
-    return $vnstat_interfaces;
-}
-
-function getLargestValue($array)
-{
-    return $max = array_reduce($array, function ($a, $b) {
-        return $a > $b['total'] ? $a : $b['total'];
-    });
-}
-
-function getLargestPrefix($kb)
-{
-    $units = ['TB', 'GB', 'MB', 'KB'];
-    $scale = 1024 * 1024 * 1024;
-    $ui = 0;
-
-    while ((($kb < $scale) && ($scale > 1))) {
-        $ui++;
-        $scale = $scale / 1024;
-    }
-
-    return $units[$ui];
-}
-
-function getVnstatData($path, $type, $interface)
-{
-    $vnstat_information = []; // Create an empty array for use later
-
-    $vnstatJSON = popen("$path --json -i $interface", "r");
-    $vnstatDecoded = "";
-
-    if (is_resource($vnstatJSON)) {
-        $iBuffer = '';
-        while (!feof($vnstatJSON)) {
-            $iBuffer .= fgets($vnstatJSON);
-        }
-
-        $vnstatDecoded = $iBuffer;
-
-        pclose($vnstatJSON);
-    }
-
-    $vnstatDecoded = json_decode($vnstatDecoded, true);
-
-    $hourlyGraph = [];
-    $hourly = [];
-    $dailyGraph = [];
-    $daily = [];
-    $monthlyGraph = [];
-    $monthly = [];
-    $top10 = [];
-
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['top'] as $top) {
-        if (is_array($top)) {
-            ++$i;
-
-            $top10[$i]['label'] = date('d/m/Y', strtotime($top['date']['month'] . "/" . $top['date']['day'] . "/" . $top['date']['year']));
-            $top10[$i]['rx'] = kbytesToString($top['rx']);
-            $top10[$i]['tx'] = kbytesToString($top['tx']);
-            $top10[$i]['totalraw'] = ($top['rx'] + $top['tx']);
-            $top10[$i]['total'] = kbytesToString($top['rx'] + $top['tx']);
-        }
-    }
-
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['day'] as $day) {
-        if (is_array($day)) {
-            ++$i;
-
-            $daily[$i]['label'] = date('d/m/Y', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
-            $daily[$i]['rx'] = kbytesToString($day['rx']);
-            $daily[$i]['tx'] = kbytesToString($day['tx']);
-            $daily[$i]['totalraw'] = ($day['rx'] + $day['tx']);
-            $daily[$i]['total'] = kbytesToString($day['rx'] + $day['tx']);
-            $daily[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
-
-            $dailyGraph[$i]['label'] = date('jS', mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']));
-            $dailyGraph[$i]['rx'] = $day['rx'];
-            $dailyGraph[$i]['tx'] = $day['tx'];
-            $dailyGraph[$i]['total'] = ($day['rx'] + $day['tx']);
-            $dailyGraph[$i]['time'] = mktime(0, 0, 0, $day['date']['month'], $day['date']['day'], $day['date']['year']);
-        }
-    }
-
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['hour'] as $hour) {
-        if (is_array($hour)) {
-            ++$i;
-
-            $hourly[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
-            $hourly[$i]['rx'] = kbytesToString($hour['rx']);
-            $hourly[$i]['tx'] = kbytesToString($hour['tx']);
-            $hourly[$i]['totalraw'] = ($hour['rx'] + $hour['tx']);
-            $hourly[$i]['total'] = kbytesToString($hour['rx'] + $hour['tx']);
-            $hourly[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
-
-            $hourlyGraph[$i]['label'] = date("ga", mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']));
-            $hourlyGraph[$i]['rx'] = $hour['rx'];
-            $hourlyGraph[$i]['tx'] = $hour['tx'];
-            $hourlyGraph[$i]['total'] = ($hour['rx'] + $hour['tx']);
-            $hourlyGraph[$i]['time'] = mktime($hour['id'], 0, 0, $hour['date']['month'], $hour['date']['day'], $hour['date']['year']);
-        }
-    }
-
-    asort($vnstatDecoded['interfaces'][0]['traffic']['month']);
-
-    $i = 0;
-    foreach ($vnstatDecoded['interfaces'][0]['traffic']['month'] as $month) {
-        if (is_array($month)) {
-            ++$i;
-
-            $monthly[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
-            $monthly[$i]['rx'] = kbytesToString($month['rx']);
-            $monthly[$i]['tx'] = kbytesToString($month['tx']);
-            $monthly[$i]['totalraw'] = ($month['rx'] + $month['tx']);
-            $monthly[$i]['total'] = kbytesToString($month['rx'] + $month['tx']);
-            $monthly[$i]['time'] = mktime(0, 0, 0, $month['date']['month'], 1, $month['date']['year']);
-
-            $monthlyGraph[$i]['label'] = date('F', mktime(0, 0, 0, $month['date']['month'], 10));
-            $monthlyGraph[$i]['rx'] = $month['rx'];
-            $monthlyGraph[$i]['tx'] = $month['tx'];
-            $monthlyGraph[$i]['total'] = ($month['rx'] + $month['tx']);
-            $monthlyGraph[$i]['time'] = mktime(0, 0, 0, $month['date']['month'], 1, $month['date']['year']);
-        }
-    }
-
-    $sorting_function = function ($item1, $item2) {
-        if ($item1['time'] == $item2['time']) {
-            return 0;
-        } else {
-            return $item1['time'] > $item2['time'] ? -1 : 1;
-        }
-    };
-
-    usort($hourly, $sorting_function);
-    usort($hourlyGraph, $sorting_function);
-    usort($daily, $sorting_function);
-    usort($dailyGraph, $sorting_function);
-    usort($monthly, $sorting_function);
-    usort($monthlyGraph, $sorting_function);
-
-    // Sort Top 10 Days by Highest Total Usage first
-    usort($top10, function ($item1, $item2) {
-        if ($item1['totalraw'] == $item2['totalraw']) {
-            return 0;
-        } else {
-            return $item1['totalraw'] > $item2['totalraw'] ? -1 : 1;
-        }
-    });
-
-    switch ($type) {
-        case "hourlyGraph":
-            return $hourlyGraph;
-        case "hourly":
-            return $hourly;
-        case "dailyGraph":
-            return $dailyGraph;
-        case "daily":
-            return $daily;
-        case "monthlyGraph":
-            return $monthlyGraph;
-        case "monthly":
-            return $monthly;
-        case "top10":
-            return $top10;
-    }
-
-    return false;
-}
+?>
