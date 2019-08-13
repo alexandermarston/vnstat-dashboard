@@ -26,9 +26,9 @@
                 orientation: 'horizontal',
                 legend: { position: 'right' },
                 explorer: { 
-                    actions: ['dragToZoom', 'rightClickToReset'],
                     axis: 'horizontal',
-                    maxZoomIn: 4.0
+                    maxZoomIn: 4.0,
+                    maxZoomOut: 3.0
             	},
                 vAxis: {
                     title: 'Data',
@@ -72,9 +72,9 @@
                 orientation: 'horizontal',
                 legend: { position: 'right' },
                 explorer: { 
-                    actions: ['dragToZoom', 'rightClickToReset'],
                     axis: 'horizontal',
-                    maxZoomIn: 4.0
+                    maxZoomIn: 4.0,
+                    maxZoomOut: 3.0
             	},
                 vAxis: {
                     title: 'Data',
@@ -118,9 +118,9 @@
                 orientation: 'horizontal',
                 legend: { position: 'right' },
                 explorer: { 
-                    actions: ['dragToZoom', 'rightClickToReset'],
                     axis: 'horizontal',
-                    maxZoomIn: 4.0
+                    maxZoomIn: 4.0,
+                    maxZoomOut: 3.0
             	},
                 vAxis: {
                     title: 'Data',
