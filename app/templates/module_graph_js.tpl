@@ -36,7 +36,8 @@
                 },
                 hAxis: {
                     title: 'Hour',
-                    format: 'HH:mm'
+                    format: 'HH:mm',
+                    direction: -1
                 }
             };
             
@@ -82,7 +83,8 @@
                 },
                 hAxis: {
                     title: 'Day',
-                    format: 'dd/MM/YYYY'
+                    format: 'dd/MM/YYYY',
+                    direction: -1
                 }
             };
             
@@ -128,7 +130,8 @@
                 },
                 hAxis: {
                     title: 'Month',
-                    format: 'MMMM YYYY'
+                    format: 'MMMM YYYY',
+                    direction: -1
                 }
             };
             
