@@ -77,4 +77,12 @@ function getLargestPrefix($kb)
     return $units[$ui];
 }
 
+function sortingFunction($item1, $item2) {
+    if ($item1['time'] == $item2['time']) {
+        return 0;
+    } else {
+        return $item1['time'] > $item2['time'] ? -1 : 1;
+    }
+};
+
 ?>

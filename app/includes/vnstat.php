@@ -125,12 +125,16 @@ class vnStat {
                                                     $hour = $traffic['time']['hour'];
                                                 }
 
-						$trafficData[$i]['label'] = date("d/m/Y g:i", mktime($hour, 0, 0, $traffic['date']['month'], $traffic['date']['day'], $traffic['date']['year']));
+						$trafficData[$i]['label'] = date("d/m/Y H:i", mktime($hour, 0, 0, $traffic['date']['month'], $traffic['date']['day'], $traffic['date']['year']));
+                                                $trafficData[$i]['time'] =  mktime($hour, 0, 0, $traffic['date']['month'], $traffic['date']['day'], $traffic['date']['year']);
 						$trafficData[$i]['rx'] = formatSize($traffic['rx'], $this->vnstatJsonVersion);
 						$trafficData[$i]['tx'] = formatSize($traffic['tx'], $this->vnstatJsonVersion);
 						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
+
+                                usort($trafficData, sortingFunction);
+
 			} else if ($type == 'graph') {
 				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['hour'.$typeAppend] as $traffic) {
 					if (is_array($traffic)) {
