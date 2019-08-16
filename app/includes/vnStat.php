@@ -86,7 +86,7 @@ final class vnStat {
 		return $vnstatInterfaces;
 	}
 
-	public function getInterfaceData(string $timeperiod, string $type, string $interface) {
+	public function getInterfaceData(string $timeperiod, string $type, string $interface): array {
 		// If json version equals 1, add an 's' onto the end of each type.
 		// e.g. 'top' becomes 'tops'
 		if ($this->vnstatJsonVersion == 1) {
