@@ -19,12 +19,11 @@
 
 // Require includes
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/includes/vnstat.php';
 require __DIR__ . '/includes/utilities.php';
 require __DIR__ . '/includes/config.php';
 
 // Initiaite vnStat class
-$vnstat = new vnStat($vnstat_bin_dir);
+$vnstat = new alexandermarston\vnStat($vnstat_bin_dir);
 
 // Initiate Smarty
 $smarty = new Smarty();

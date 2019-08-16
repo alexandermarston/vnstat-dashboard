@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /*
  * Copyright (C) 2019 Alexander Marston (alexander.marston@gmail.com)
@@ -17,13 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class vnStat {
+namespace alexandermarston;
+
+final class vnStat {
 	protected $executablePath;
 	protected $vnstatVersion;
 	protected $vnstatJsonVersion;
 	protected $vnstatData;
 
-	public function __construct ($executablePath) {
+	public function __construct (string $executablePath) {
 		if (isset($executablePath)) {
 			$this->executablePath = $executablePath;
 
@@ -43,7 +46,6 @@ class vnStat {
 
 				$this->processVnstatData($streamBuffer);
 			} else {
-
 			}
 
 
@@ -52,7 +54,7 @@ class vnStat {
 		}
 	}
 
-	private function processVnstatData($vnstatJson) {
+	private function processVnstatData(string $vnstatJson) {
 		$decodedJson = json_decode($vnstatJson, true);
 
 		// Check the JSON is valid
@@ -65,15 +67,15 @@ class vnStat {
 		$this->vnstatJsonVersion = $decodedJson['jsonversion'];
 	}
 
-	public function getVnstatVersion() {
+	public function getVnstatVersion(): string {
 		return $this->vnstatVersion;
 	}
 
-	public function getVnstatJsonVersion() {
+	public function getVnstatJsonVersion(): string {
 		return $this->vnstatJsonVersion;
 	}
 
-	public function getInterfaces() {
+	public function getInterfaces(): array {
 		// Create a placeholder array
 		$vnstatInterfaces = [];
 
@@ -84,7 +86,7 @@ class vnStat {
 		return $vnstatInterfaces;
 	}
 
-	public function getInterfaceData($timeperiod, $type, $interface) {
+	public function getInterfaceData(string $timeperiod, string $type, string $interface) {
 		// If json version equals 1, add an 's' onto the end of each type.
 		// e.g. 'top' becomes 'tops'
 		if ($this->vnstatJsonVersion == 1) {
