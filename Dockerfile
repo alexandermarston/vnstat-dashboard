@@ -1,4 +1,4 @@
-FROM php:7.0-apache
+FROM php:7.2-apache
 
 MAINTAINER Alex Marston <alexander.marston@gmail.com>
 
