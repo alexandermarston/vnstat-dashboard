@@ -37,7 +37,12 @@
                 hAxis: {
                     title: 'Hour',
                     format: 'HH:mm',
-                    direction: -1
+                    direction: -1,
+                    ticks: [
+{foreach from=$hourlyGraphData key=key item=value}
+                        new {$value.label},
+{/foreach}
+                    ]
                 }
             };
             
