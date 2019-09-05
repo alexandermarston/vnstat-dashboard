@@ -1,35 +1,36 @@
-# vnstat-dashboard
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard?ref=badge_shield)
+# What is vnstat-dashboard?
+This dashboard is an adaptation of vnstat-php-frontend by bjd using Bootstrap written in PHP. It provides the following:
 
-
-An adaptation of vnstat-php-frontend by bjd using Bootstrap written in PHP.
-
-## Features
 * Hourly Statistics Chart (using Google Charts)
 * Daily & Monthly Statistics Overview
 * Top 10 Day Statistics
 * Automatically populated interface selection
 
-## System Requirements
-* PHP Version 5.4
+## Run it with Docker
 
-## How to run it with Docker
-### Prerequisites
-* Docker should be installed:
-    * https://docs.docker.com/install/
-* `vnstat` should be installed:
-    * https://www.linuxbabe.com/monitoring/install-vnstat-debian-8ubuntu-16-04-server-monitor-network-traffic
-    * https://github.com/vergoh/vnstat
+### How to build it
+``$ docker build . -t amarston/vnstat-dashboard:latest``
+
+### How to publish it
+``$ docker push amarston/vnstat-dashboard:latest``
 
 ### How to start it
-1. `docker-compose up -d`
-2. Open http://localhost/vnstat
+``$ docker run --name vnstat-dashboard -p 80:80 -v /usr/bin/vnstat:/usr/bin/vnstat -v /var/lib/vnstat:/var/lib/vnstat -d amarston/vnstat-dashboard:latest``
 
 ### How to stop it
-`docker-compose down`
+``$ docker stop vnstat-dashboard``
+
+## Run it with Locally
+
+### How to run it
+```
+$ cp -rp app/ /var/www/html/vnstat/
+$ cd /var/www/html/vnstat/
+$ composer install
+```
 
 ## Licensing
-Copyright (C) 2016 Alexander Marston (alexander.marston@gmail.com)
+Copyright (C) 2019 Alexander Marston (alexander.marston@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,5 +44,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Falexandermarston%2Fvnstat-dashboard?ref=badge_large)
