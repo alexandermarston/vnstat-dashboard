@@ -127,6 +127,7 @@ function getLargestPrefix($magnitude)
 function getVnstatData($path, $type, $interface)
 {
     global $version;
+    global $smarty;
 
     $vnstat_information = []; // Create an empty array for use later
 
@@ -159,6 +160,8 @@ function getVnstatData($path, $type, $interface)
     if( isset( $vnstatDecoded['jsonversion'] )){
         $version = $vnstatDecoded['jsonversion'];
     }
+
+    $smarty->assign('version', $version);
 
     $s='';
     if( $version == 1 ){
