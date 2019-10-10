@@ -1,15 +1,45 @@
 <?php
 
+/*
+ * Copyright (C) 2019 Alexander Marston (alexander.marston@gmail.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 // Require includes
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/includes/vnstat.php';
+require __DIR__ . '/includes/utilities.php';
 require __DIR__ . '/includes/config.php';
+
+if (isset($vnstat_config)) {
+    $vnstat_cmd = $vnstat_bin_dir.' --config '.$vnstat_config;
+} else {
+    $vnstat_cmd = $vnstat_bin_dir;
+}
+
+// Initiaite vnStat class
+$vnstat = new vnStat($vnstat_cmd);
 
 // Initiate Smarty
 $smarty = new Smarty();
 
 // Set the current year
 $smarty->assign('year', date("Y"));
+
+// Set the list of interfaces
+$interface_list = $vnstat->getInterfaces();
 
 // Set the current interface
 $thisInterface = "";
@@ -27,95 +57,47 @@ if (isset($_GET['i'])) {
     $thisInterface = reset($interface_list);
 }
 
-if (isset($vnstat_config)) {
-    $vnstat_cmd = $vnstat_bin_dir.' --config '.$vnstat_config;
-} else {
-    $vnstat_cmd = $vnstat_bin_dir;
-}
 
 $smarty->assign('current_interface', $thisInterface);
 
 // Assign interface options
-global $interface_list;
 $smarty->assign('interface_list', $interface_list);
 
+// JsonVersion
+$smarty->assign('jsonVersion', $vnstat->getVnstatJsonVersion());
+
 // Populate table data
-$fiveData = getVnstatData($vnstat_cmd, 'five', $thisInterface);
+$fiveData = $vnstat->getInterfaceData('five', 'table', $thisInterface);
 $smarty->assign('fiveTableData', $fiveData);
 
-$hourlyData = getVnstatData($vnstat_cmd, 'hourly', $thisInterface);
+$hourlyData = $vnstat->getInterfaceData('hourly', 'table', $thisInterface);
 $smarty->assign('hourlyTableData', $hourlyData);
 
-$dailyData = getVnstatData($vnstat_cmd, 'daily', $thisInterface);
+$dailyData = $vnstat->getInterfaceData('daily', 'table', $thisInterface);
 $smarty->assign('dailyTableData', $dailyData);
 
-$monthlyData = getVnstatData($vnstat_cmd, 'monthly', $thisInterface);
+$monthlyData = $vnstat->getInterfaceData('monthly', 'table', $thisInterface);
 $smarty->assign('monthlyTableData', $monthlyData);
 
-$top10Data = getVnstatData($vnstat_cmd, 'top10', $thisInterface);
+$top10Data = $vnstat->getInterfaceData('top10', 'table', $thisInterface);
 $smarty->assign('top10TableData', $top10Data);
 
 // Populate graph data
-
-$fiveGraphData = getVnstatData($vnstat_cmd, 'fiveGraph', $thisInterface);
-$fiveLargestValue = getLargestValue($fiveGraphData);
-$fiveMagnitude = getMagnitude($fiveLargestValue);
-$fiveLargestPrefix = getLargestPrefix($fiveMagnitude);
-$fiveBase = getBaseValue($fiveGraphData, $fiveMagnitude);
-if ($fiveBase < .01)
-{
-    $fiveMagnitude = $fiveMagnitude - 1;
-    $fiveLargestPrefix = getLargestPrefix($fiveMagnitude);
-    $fiveBase = getBaseValue($fiveGraphData, $fiveMagnitude);
-}
-$smarty->assign('fiveBase', $fiveBase);
+$fiveGraphData = $vnstat->getInterfaceData('five', 'graph', $thisInterface);
 $smarty->assign('fiveGraphData', $fiveGraphData);
-$smarty->assign('fiveLargestPrefix', $fiveLargestPrefix);
+$smarty->assign('fiveLargestPrefix', $fiveGraphData[1]['delimiter']);
 
-$hourlyGraphData = getVnstatData($vnstat_cmd, 'hourlyGraph', $thisInterface);
-$hourlyLargestValue = getLargestValue($hourlyGraphData);
-$hourlyMagnitude = getMagnitude($hourlyLargestValue);
-$hourlyLargestPrefix = getLargestPrefix($hourlyMagnitude);
-$hourlyBase = getBaseValue($hourlyGraphData, $hourlyMagnitude);
-if ($hourlyBase < .01)
-{
-    $hourlyMagnitude = $hourlyMagnitude - 1;
-    $hourlyLargestPrefix = getLargestPrefix($hourlyMagnitude);
-    $hourlyBase = getBaseValue($hourlyGraphData, $hourlyMagnitude);
-}
-$smarty->assign('hourlyBase', $hourlyBase);
+$hourlyGraphData = $vnstat->getInterfaceData('hourly', 'graph', $thisInterface);
 $smarty->assign('hourlyGraphData', $hourlyGraphData);
-$smarty->assign('hourlyLargestPrefix', $hourlyLargestPrefix);
+$smarty->assign('hourlyLargestPrefix', $hourlyGraphData[1]['delimiter']);
 
-$dailyGraphData = getVnstatData($vnstat_cmd, 'dailyGraph', $thisInterface);
-$dailyLargestValue = getLargestValue($dailyGraphData);
-$dailyMagnitude = getMagnitude($dailyLargestValue);
-$dailyLargestPrefix = getLargestPrefix($dailyMagnitude);
-$dailyBase = getBaseValue($dailyGraphData, $dailyMagnitude);
-if ($dailyBase < .01)
-{
-    $dailyMagnitude = $dailyMagnitude - 1;
-    $dailyLargestPrefix = getLargestPrefix($dailyMagnitude);
-    $dailyBase = getBaseValue($dailyGraph, $dailyMagnitude);
-}
-$smarty->assign('dailyBase', $dailyBase);
+$dailyGraphData = $vnstat->getInterfaceData('daily', 'graph', $thisInterface);
 $smarty->assign('dailyGraphData', $dailyGraphData);
-$smarty->assign('dailyLargestPrefix', $dailyLargestPrefix);
+$smarty->assign('dailyLargestPrefix', $dailyGraphData[1]['delimiter']);
 
-$monthlyGraphData = getVnstatData($vnstat_cmd, 'monthlyGraph', $thisInterface);
-$monthlyLargestValue = getLargestValue($monthlyGraphData);
-$monthlyMagnitude = getMagnitude($monthlyLargestValue);
-$monthlyLargestPrefix = getLargestPrefix($monthlyMagnitude);
-$monthlyBase = getBaseValue($monthlyGraphData, $monthlyMagnitude);
-if ($monthlyBase < .01)
-{
-    $monthlyMagnitude = $monthlyMagnitude - 1;
-    $monthlyLargestPrefix = getLargestPrefix($monthlyMagnitude);
-    $monthlyBase = getBaseValue($monthlyGraph, $monthlyMagnitude);
-}
-$smarty->assign('monthlyBase', $monthlyBase);
+$monthlyGraphData = $vnstat->getInterfaceData('monthly', 'graph', $thisInterface);
 $smarty->assign('monthlyGraphData', $monthlyGraphData);
-$smarty->assign('monthlyLargestPrefix', $monthlyLargestPrefix);
+$smarty->assign('monthlyLargestPrefix', $monthlyGraphData[1]['delimiter']);
 
 // Display the page
 $smarty->display('templates/site_index.tpl');

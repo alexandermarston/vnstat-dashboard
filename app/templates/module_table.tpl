@@ -1,27 +1,27 @@
-<div class="container">
-    <ul class="nav nav-tabs" id="tableTab" role="tablist">
-        {if $version gt 1}
-        <li class="nav-item">
-            <a class="nav-link active" id="five-table-tab" data-toggle="tab" href="#five-table" role="tab" aria-controls="five-table" aria-selected="true">Five Minute</a>
-        </li> 
-        <li class="nav-item">
-            <a class="nav-link" id="hourly-table-tab" data-toggle="tab" href="#hourly-table" role="tab" aria-controls="hourly-table" aria-selected="false">Hourly</a>
-        </li>
-        {else}
-        <li class="nav-item">
-            <a class="nav-link active" id="hourly-table-tab" data-toggle="tab" href="#hourly-table" role="tab" aria-controls="hourly-table" aria-selected="true">Hourly</a>
-        </li>
-        {/if}
-        <li class="nav-item">
-            <a class="nav-link" id="daily-table-tab" data-toggle="tab" href="#daily-table" role="tab" aria-controls="daily-table" aria-selected="false">Daiily</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" id="monthly-table-tab" data-toggle="tab" href="#monthly-table" role="tab" aria-controls="monthly-table" aria-selected="false">Monthly</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" id="top10-table-tab" data-toggle="tab" href="#top10-table" role="tab" aria-controls="top10-table" aria-selected="false">Top</a>
-        </li>
-    </ul>
+    <div class="container">
+        <ul class="nav nav-tabs" id="tableTab" role="tablist">
+            {if $jsonVersion gt 1}
+                <li class="nav-item">
+                    <a class="nav-link active" id="five-table-tab" data-toggle="tab" href="#five-table" role="tab" aria-controls="five-table" aria-selected="true">Five Minute</a>
+                </li> 
+                <li class="nav-item">
+                    <a class="nav-link" id="hourly-table-tab" data-toggle="tab" href="#hourly-table" role="tab" aria-controls="hourly-table" aria-selected="false">Hourly</a>
+                </li>
+                {else}
+                <li class="nav-item">
+                    <a class="nav-link active" id="hourly-table-tab" data-toggle="tab" href="#hourly-table" role="tab" aria-controls="hourly-table" aria-selected="true">Hourly</a>
+                </li>
+            {/if}
+            <li class="nav-item">
+                <a class="nav-link" id="daily-table-tab" data-toggle="tab" href="#daily-table" role="tab" aria-controls="daily-table" aria-selected="false">Daily</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="monthly-table-tab" data-toggle="tab" href="#monthly-table" role="tab" aria-controls="monthly-table" aria-selected="false">Monthly</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="top10-table-tab" data-toggle="tab" href="#top10-table" role="tab" aria-controls="top10-table" aria-selected="false">Top 10</a>
+            </li>
+        </ul>
 
         <div class="tab-content" id="tableTabContent">
             <div class="tab-pane fade show active" id="five-table" role="tabpanel" aria-labelledby="five-table-tab">
