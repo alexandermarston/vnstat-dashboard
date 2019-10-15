@@ -83,8 +83,8 @@ $top10Data = $vnstat->getInterfaceData('top10', 'table', $thisInterface);
 $smarty->assign('top10TableData', $top10Data);
 
 // Populate graph data
-$fiveGraphData = $vnstat->getInterfaceData('five', 'graph', $thisInterface);
-if (isset($fiveGraphData[0])) {
+if ($vnstat->getVnstatJsonVersion() > 1) {
+    $fiveGraphData = $vnstat->getInterfaceData('five', 'graph', $thisInterface);
     $smarty->assign('fiveGraphData', $fiveGraphData);
     $smarty->assign('fiveLargestPrefix', $fiveGraphData[0]['delimiter']);
 }

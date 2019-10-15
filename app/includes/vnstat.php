@@ -101,7 +101,11 @@ class vnStat {
 		$i = -1;
 
 		// Get the array index for the chosen interface
-		$arrayIndex = array_search($interface, array_column($this->vnstatData['interfaces'], 'id'));
+		if ($this->vnstatJsonVersion == 1) {
+		    $arrayIndex = array_search($interface, array_column($this->vnstatData['interfaces'], 'id'));
+                } else {
+		    $arrayIndex = array_search($interface, array_column($this->vnstatData['interfaces'], 'name'));
+                }
  
 		if ($timeperiod == 'top10') {
 			if ($type == 'table') {
@@ -119,7 +123,7 @@ class vnStat {
 			}
 		}
 
-		if (isset($this->vnstatData['interfaces'][0]['traffic']['fiveminute']) && ($timeperiod == 'five')) {
+		if (($this->vnstatJsonVersion > 1) && ($timeperiod == 'five')) {
 			if ($type == 'table') {
 				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['fiveminute'] as $traffic) {
 					if (is_array($traffic)) {
@@ -132,7 +136,6 @@ class vnStat {
 						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
-                                usort($trafficData, 'sortingFunction');
 			} else if ($type == 'graph') {
 				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['fiveminute'] as $traffic) {
 					if (is_array($traffic)) {
@@ -145,7 +148,6 @@ class vnStat {
 						$trafficData[$i]['total'] = kibibytesToBytes(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
-                                usort($trafficData, 'sortingFunction');
 			}
 		}
 
@@ -169,7 +171,6 @@ class vnStat {
 					}
 				}
 
-                                usort($trafficData, 'sortingFunction');
 
 			} else if ($type == 'graph') {
 				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['hour'.$typeAppend] as $traffic) {
@@ -189,7 +190,6 @@ class vnStat {
 						$trafficData[$i]['total'] = kibibytesToBytes(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
-                                usort($trafficData, 'sortingFunction');
 			}
 		}
 
@@ -206,7 +206,6 @@ class vnStat {
 						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
-                                usort($trafficData, 'sortingFunction');
 			} else if ($type == 'graph') {
 				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['day'.$typeAppend] as $traffic) {
 					if (is_array($traffic)) {
@@ -219,7 +218,6 @@ class vnStat {
 						$trafficData[$i]['total'] = kibibytesToBytes(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
-                                usort($trafficData, 'sortingFunction');
 			}
 		}
 
@@ -236,7 +234,6 @@ class vnStat {
 						$trafficData[$i]['total'] = formatSize(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
-                                usort($trafficData, 'sortingFunction');
 			} else if ($type == 'graph') {
 				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['month'.$typeAppend] as $traffic) {
 					if (is_array($traffic)) {
@@ -249,21 +246,23 @@ class vnStat {
 						$trafficData[$i]['total'] = kibibytesToBytes(($traffic['rx'] + $traffic['tx']), $this->vnstatJsonVersion);
 					}
 				}
-                                usort($trafficData, 'sortingFunction');
 			}
 		}
+
+                usort($trafficData, 'sortingFunction');
 
                 if ($type == 'graph') {
                     // Get the largest value and then prefix (B, KB, MB, GB, etc)
                     $trafficLargestValue = getLargestValue($trafficData);
                     $trafficLargestPrefix = getLargestPrefix($trafficLargestValue);
 
-                    foreach($trafficData as $key => $value) {
-                        $trafficData[$key]['rx'] = formatBytesTo($value['rx'], $trafficLargestPrefix);
-                        $trafficData[$key]['tx'] = formatBytesTo($value['tx'], $trafficLargestPrefix);
-                        $trafficData[$key]['total'] = formatBytesTo($value['total'], $trafficLargestPrefix);
-                        $trafficData[$key]['delimiter'] = $trafficLargestPrefix;
+                    foreach($trafficData as &$value) {
+                        $value['rx'] = formatBytesTo($value['rx'], $trafficLargestPrefix);
+                        $value['tx'] = formatBytesTo($value['tx'], $trafficLargestPrefix);
+                        $value['total'] = formatBytesTo($value['total'], $trafficLargestPrefix);
                     }
+                    unset($value);
+                    $trafficData[0]['delimiter'] = $trafficLargestPrefix;
                 }
 
 		return $trafficData;

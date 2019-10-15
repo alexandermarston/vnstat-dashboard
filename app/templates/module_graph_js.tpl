@@ -9,7 +9,7 @@
 
         function drawFiveChart()
         {
-            {if isset($fiveGraphData[0]['label'])}
+            {if $jsonVersion gt 1}
             var data = new google.visualization.DataTable();
 
             data.addColumn('datetime', 'Time');
