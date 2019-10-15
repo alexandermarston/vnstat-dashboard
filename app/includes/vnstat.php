@@ -183,7 +183,7 @@ class vnStat {
                                                     $hour = $traffic['time']['hour'];
                                                 }
 
-						$trafficData[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d, %d)", $traffic['date']['year'], $traffic['date']['month']-1, $traffic['date']['day'], $hour, 0, 0);
+						$trafficData[$i]['label'] = sprintf("Date(%d, %d, %d, %d)", $traffic['date']['year'], $traffic['date']['month']-1, $traffic['date']['day'], $hour);
                                                 $trafficData[$i]['time'] =  mktime($hour, 0, 0, $traffic['date']['month'], $traffic['date']['day'], $traffic['date']['year']);
 						$trafficData[$i]['rx'] = kibibytesToBytes($traffic['rx'], $this->vnstatJsonVersion);
 						$trafficData[$i]['tx'] = kibibytesToBytes($traffic['tx'], $this->vnstatJsonVersion);
@@ -211,7 +211,7 @@ class vnStat {
 					if (is_array($traffic)) {
 						$i++;
 
-						$trafficData[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d, %d)", $traffic['date']['year'], $traffic['date']['month']-1, $traffic['date']['day'], 0, 0, 0);
+						$trafficData[$i]['label'] = sprintf("Date(%d, %d, %d)", $traffic['date']['year'], $traffic['date']['month']-1, $traffic['date']['day']);
                                                 $trafficData[$i]['time'] =  mktime(0, 0, 0, $traffic['date']['month'], $traffic['date']['day'], $traffic['date']['year']);
 						$trafficData[$i]['rx'] = kibibytesToBytes($traffic['rx'], $this->vnstatJsonVersion);
 						$trafficData[$i]['tx'] = kibibytesToBytes($traffic['tx'], $this->vnstatJsonVersion);
@@ -239,7 +239,7 @@ class vnStat {
 					if (is_array($traffic)) {
 						$i++;
 
-                                                $trafficData[$i]['label'] = sprintf("Date(%d, %d, %d, %d, %d, %d)", $traffic['date']['year'], $traffic['date']['month'] - 1, 10, 0, 0, 0);
+                                                $trafficData[$i]['label'] = sprintf("Date(%d, %d, %d)", $traffic['date']['year'], $traffic['date']['month'] - 1, 10);
                                                 $trafficData[$i]['time'] =  mktime(0, 0, 0, $traffic['date']['month'], 10, $traffic['date']['year']);
 						$trafficData[$i]['rx'] = kibibytesToBytes($traffic['rx'], $this->vnstatJsonVersion);
 						$trafficData[$i]['tx'] = kibibytesToBytes($traffic['tx'], $this->vnstatJsonVersion);
@@ -249,7 +249,9 @@ class vnStat {
 			}
 		}
 
-                usort($trafficData, 'sortingFunction');
+		if ($timeperiod != 'top10') {
+                    usort($trafficData, 'sortingFunction');
+                }
 
                 if ($type == 'graph') {
                     // Get the largest value and then prefix (B, KB, MB, GB, etc)
