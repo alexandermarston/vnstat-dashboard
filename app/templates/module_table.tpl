@@ -24,6 +24,7 @@
         </ul>
 
         <div class="tab-content" id="tableTabContent">
+            {if $jsonVersion gt 1}
             <div class="tab-pane fade show active" id="five-table" role="tabpanel" aria-labelledby="five-table-tab">
                 <table class="table table-bordered">
                     <thead>
@@ -47,7 +48,10 @@
                 </table>
             </div>
 
+            <div class="tab-pane fade" id="hourly-table" role="tabpanel" aria-labelledby="hourly-table-tab">
+            {else}
             <div class="tab-pane fade show active" id="hourly-table" role="tabpanel" aria-labelledby="hourly-table-tab">
+            {/if}
                 <table class="table table-bordered">
                     <thead>
                         <tr>
