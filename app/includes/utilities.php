@@ -17,6 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+$logk = log(1024);
+
+function getScale($bytes)
+{
+    global $logk;
+
+    $ui = floor(round(log($bytes)/$logk,3));
+    if ($ui < 0) { $ui = 0; }
+    if ($ui > 8) { $ui = 8; }
+
+    return $ui;
+}
+
 // Get the largest value in an array
 function getLargestValue($array) {
     return $max = array_reduce($array, function ($a, $b) {
@@ -24,35 +37,73 @@ function getLargestValue($array) {
     });
 }
 
-function formatSize($bytes, $vnstatJsonVersion) {
+function getBaseValue($array, $scale)
+{
+    $big = pow(1024,9);
+
+    // Find the smallest non-zero value
+    $sml = array_reduce($array, function ($a, $b) {
+        if  ((1 <= $b['rx']) && ($b['rx'] < $b['tx'])) {
+            $sm = $b['rx'];
+        } else {
+            $sm = $b['tx'];
+        }
+        if (($sm < 1) || ($a < $sm)) {
+            return $a;
+        } else {
+            return $sm;
+        }
+    }, $big);
+
+    if ($sml >= $big/2) {
+        $sml = 1;
+    }
+
+    // divide by scale then round down to a power of 10
+    $base = pow(10,floor(round(log10($sml/pow(1024,$scale)),3)));
+
+    // convert back to bytes
+    $baseByte = $base * pow(1024, $scale);
+
+    // Don't make the bar invisable - must be > 5% difference
+    if ($sml / $baseByte < 1.05) {
+        $base = $base / 10;
+    }
+
+    return $base;
+}
+
+function formatSize($bytes, $vnstatJsonVersion, $decimals = 2) {
+
     // json version 1 = convert from KiB
     // json version 2 = convert from bytes
     if ($vnstatJsonVersion == 1) {
         $bytes *= 1024;  // convert from kibibytes to bytes
     }
 
-    return formatBytes($bytes);
+    return formatBytes($bytes, $decimals);
 }
 
-function formatBytes($bytes, $decimals = 2) {
-    $base = log(floatval($bytes), 1024);
+function getLargestPrefix($scale)
+{
     $suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-    return round(pow(1024, $base - floor($base)), $decimals) .' '. $suffixes[floor($base)];
+    return $suffixes[$scale];
 }
 
-function formatBytesTo($bytes, $delimiter, $decimals = 2) {
+function formatBytes($bytes, $decimals = 3) {
+
+    $scale = getScale($bytes);
+
+    return round($bytes/pow(1024, $scale), $decimals) .' '. getLargestPrefix($scale);
+}
+
+function formatBytesTo($bytes, $scale, $decimals = 4) {
+
     if ($bytes == 0) {
         return '0';
     }
 
-    $k = 1024;
-    $dm = $decimals < 0 ? 0 : $decimals;
-    $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-    $i = array_search($delimiter, $sizes);
-
-    return number_format(($bytes / pow($k, $i)), $decimals);
+    return number_format(($bytes / pow(1024, $scale)), $decimals, ".", "");
 }
 
 function kibibytesToBytes($kibibytes, $vnstatJsonVersion) {
@@ -61,20 +112,6 @@ function kibibytesToBytes($kibibytes, $vnstatJsonVersion) {
     } else {
         return $kibibytes;
     }
-}
-
-function getLargestPrefix($kb)
-{
-    $units = ['TB', 'GB', 'MB', 'KB', 'B'];
-    $scale = 1024 * 1024 * 1024 * 1024;
-    $ui = 0;
-
-    while ((($kb < $scale) && ($scale > 1))) {
-        $ui++;
-        $scale = $scale / 1024;
-    }
-
-    return $units[$ui];
 }
 
 function sortingFunction($item1, $item2) {
