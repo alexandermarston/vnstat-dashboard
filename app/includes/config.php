@@ -17,15 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Disable error reporting to screen
-/*ini_set('display_errors', 0);
-error_reporting(E_ALL);*/
+// Uncomment to enable error reporting to the screen
+/*ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+ferror_reporting(E_ALL);*/
 
 // Set the default system Timezone
 date_default_timezone_set('Europe/London');
 
 // Path of vnstat
 $vnstat_bin_dir = '/usr/bin/vnstat';
+
+// Path of config file
+/*$vnstat_config = '/etc/vnstat.conf';*/
+
+// linear or logarithmic graphs. Uncomment for logarithmic
+/*$graph_type = 'log';*/
 
 // Set to true to set your own interfaces
 $use_predefined_interfaces = false;

@@ -1,8 +1,17 @@
     <div class="container">
         <ul class="nav nav-tabs" id="tableTab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="hourly-table-tab" data-toggle="tab" href="#hourly-table" role="tab" aria-controls="hourly-table" aria-selected="true">Hourly</a>
-            </li>
+            {if $jsonVersion gt 1}
+                <li class="nav-item">
+                    <a class="nav-link active" id="five-table-tab" data-toggle="tab" href="#five-table" role="tab" aria-controls="five-table" aria-selected="true">Five Minute</a>
+                </li> 
+                <li class="nav-item">
+                    <a class="nav-link" id="hourly-table-tab" data-toggle="tab" href="#hourly-table" role="tab" aria-controls="hourly-table" aria-selected="false">Hourly</a>
+                </li>
+                {else}
+                <li class="nav-item">
+                    <a class="nav-link active" id="hourly-table-tab" data-toggle="tab" href="#hourly-table" role="tab" aria-controls="hourly-table" aria-selected="true">Hourly</a>
+                </li>
+            {/if}
             <li class="nav-item">
                 <a class="nav-link" id="daily-table-tab" data-toggle="tab" href="#daily-table" role="tab" aria-controls="daily-table" aria-selected="false">Daily</a>
             </li>
@@ -15,7 +24,34 @@
         </ul>
 
         <div class="tab-content" id="tableTabContent">
+            {if $jsonVersion gt 1}
+            <div class="tab-pane fade show active" id="five-table" role="tabpanel" aria-labelledby="five-table-tab">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Received</th>
+                            <th>Sent</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+{foreach from=$fiveTableData key=key item=value}
+                        <tr>
+                            <td>{$value.label}</td>
+                            <td>{$value.rx}</td>
+                            <td>{$value.tx}</td>
+                            <td>{$value.total}</td>
+                        </tr>
+{/foreach}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="hourly-table" role="tabpanel" aria-labelledby="hourly-table-tab">
+            {else}
             <div class="tab-pane fade show active" id="hourly-table" role="tabpanel" aria-labelledby="hourly-table-tab">
+            {/if}
                 <table class="table table-bordered">
                     <thead>
                         <tr>
