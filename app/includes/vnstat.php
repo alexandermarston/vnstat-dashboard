@@ -256,15 +256,25 @@ class vnStat {
                 if ($type == 'graph') {
                     // Get the largest value and then prefix (B, KB, MB, GB, etc)
                     $trafficLargestValue = getLargestValue($trafficData);
-                    $trafficLargestPrefix = getLargestPrefix($trafficLargestValue);
+                    $trafficScale = getScale($trafficLargestValue);
+                    $trafficLargestPrefix = getLargestPrefix($trafficScale);
+                    $trafficBase = getBaseValue($trafficData, $trafficScale);
+                    if (($trafficBase < .0099) && ($trafficScale >= 1))
+                    {
+                        $trafficScale = $trafficScale - 1;
+                        $trafficLargestPrefix = getLargestPrefix($trafficScale);
+                        $trafficBase = getBaseValue($trafficData, $trafficScale);
+                    }
 
                     foreach($trafficData as &$value) {
-                        $value['rx'] = formatBytesTo($value['rx'], $trafficLargestPrefix);
-                        $value['tx'] = formatBytesTo($value['tx'], $trafficLargestPrefix);
-                        $value['total'] = formatBytesTo($value['total'], $trafficLargestPrefix);
+                        $value['rx'] = formatBytesTo($value['rx'], $trafficScale);
+                        $value['tx'] = formatBytesTo($value['tx'], $trafficScale);
+                        $value['total'] = formatBytesTo($value['total'], $trafficScale);
                     }
+
                     unset($value);
                     $trafficData[0]['delimiter'] = $trafficLargestPrefix;
+                    $trafficData[0]['base'] = $trafficBase;
                 }
 
 		return $trafficData;

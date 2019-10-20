@@ -36,17 +36,29 @@
                     maxZoomOut: 10.0
             	},
                 vAxis: {
-                    format: '##.## {$fiveLargestPrefix}'
+                    format: '###.### {$fiveLargestPrefix}'
+                    {if $graph_type == 'log'}
+                        ,scaleType: 'log',
+                        baseline: {$fiveBase}
+                    {/if}
                 },
                 hAxis: {
                     direction: -1,
                     format: 'd/H:mm',
-                    minorGridlines: { count: 0 },
-                    title: 'Day/Hour:Minute',
+                    {if $jsonVersion > 1}
+                        title: 'Day/Hour:Minute (Scroll to zoom, Drag to pan)',
+                    {else}
+                        title: 'Day/Hour:Minute',
+                    {/if}
                     viewWindow: {
-                        min: 'Date('+(endD-7200000).toString()+')',
+                        min: 'Date('+(endD-7050000).toString()+')',
                         max: 'Date('+(endD+150000).toString()+')'
-                    }
+                    },
+                    ticks: [
+{foreach from=$fiveGraphData key=key item=value}
+                        new {$value.label},
+{/foreach}
+                    ]
                 }
             };
 
@@ -91,14 +103,22 @@
                     maxZoomOut: 10.0
             	},
                 vAxis: {
-                    format: '##.## {$hourlyLargestPrefix}'
+                    format: '###.### {$hourlyLargestPrefix}'
+                    {if $graph_type == 'log'}
+                        ,scaleType: 'log',
+                        baseline: {$hourlyBase}
+                    {/if}
                 },
                 hAxis: {
-                    title: 'Day/Hour',
+                    {if $jsonVersion > 1}
+                        title: 'Day/Hour (Scroll to zoom, Drag to pan)',
+                    {else}
+                        title: 'Day/Hour',
+                    {/if}
                     format: 'd/H',
                     direction: -1,
                     viewWindow: {
-                        min: 'Date('+(endD-86400000).toString()+')',
+                        min: 'Date('+(endD-84600000).toString()+')',
                         max: 'Date('+(endD+1800000).toString()+')'
                     },
                     ticks: [
@@ -149,16 +169,29 @@
                     maxZoomOut: 10.0
             	},
                 vAxis: {
-                    format: '##.## {$dailyLargestPrefix}'
+                    format: '###.### {$dailyLargestPrefix}'
+                    {if $graph_type == 'log'}
+                        ,scaleType: 'log',
+                        baseline: {$dailyBase}
+                    {/if}
                 },
                 hAxis: {
-                    title: 'Day',
+                    {if $jsonVersion > 1}
+                        title: 'Day (Scroll to zoom, Drag to pan)',
+                    {else}
+                        title: 'Day',
+                    {/if}
                     format: 'dd/MM/YYYY',
                     viewWindow: {
-                        min: 'Date('+(endD-2592000000).toString()+')',
+                        min: 'Date('+(endD-2548800000).toString()+')',
                         max: 'Date('+(endD+43200000).toString()+')'
                     },
-                    direction: -1
+                    direction: -1,
+                    ticks: [
+{foreach from=$dailyGraphData key=key item=value}
+                        new {$value.label},
+{/foreach}
+                    ]
                 }
             };
 

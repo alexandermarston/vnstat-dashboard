@@ -29,6 +29,10 @@ if (isset($vnstat_config)) {
     $vnstat_cmd = $vnstat_bin_dir;
 }
 
+if (empty($graph_type)) {
+    $graph_type = 'linear';
+}
+
 // Initiaite vnStat class
 $vnstat = new vnStat($vnstat_cmd);
 
@@ -57,6 +61,7 @@ if (isset($_GET['i'])) {
     $thisInterface = reset($interface_list);
 }
 
+$smarty->assign('graph_type', $graph_type);
 
 $smarty->assign('current_interface', $thisInterface);
 
@@ -67,8 +72,10 @@ $smarty->assign('interface_list', $interface_list);
 $smarty->assign('jsonVersion', $vnstat->getVnstatJsonVersion());
 
 // Populate table data
-$fiveData = $vnstat->getInterfaceData('five', 'table', $thisInterface);
-$smarty->assign('fiveTableData', $fiveData);
+if ($vnstat->getVnstatJsonVersion() > 1) {
+    $fiveData = $vnstat->getInterfaceData('five', 'table', $thisInterface);
+    $smarty->assign('fiveTableData', $fiveData);
+}
 
 $hourlyData = $vnstat->getInterfaceData('hourly', 'table', $thisInterface);
 $smarty->assign('hourlyTableData', $hourlyData);
@@ -87,15 +94,18 @@ if ($vnstat->getVnstatJsonVersion() > 1) {
     $fiveGraphData = $vnstat->getInterfaceData('five', 'graph', $thisInterface);
     $smarty->assign('fiveGraphData', $fiveGraphData);
     $smarty->assign('fiveLargestPrefix', $fiveGraphData[0]['delimiter']);
+    $smarty->assign('fiveBase', $fiveGraphData[0]['base']);
 }
 
 $hourlyGraphData = $vnstat->getInterfaceData('hourly', 'graph', $thisInterface);
 $smarty->assign('hourlyGraphData', $hourlyGraphData);
 $smarty->assign('hourlyLargestPrefix', $hourlyGraphData[0]['delimiter']);
+$smarty->assign('hourlyBase', $hourlyGraphData[0]['base']);
 
 $dailyGraphData = $vnstat->getInterfaceData('daily', 'graph', $thisInterface);
 $smarty->assign('dailyGraphData', $dailyGraphData);
 $smarty->assign('dailyLargestPrefix', $dailyGraphData[0]['delimiter']);
+$smarty->assign('dailyBase', $dailyGraphData[0]['base']);
 
 $monthlyGraphData = $vnstat->getInterfaceData('monthly', 'graph', $thisInterface);
 $smarty->assign('monthlyGraphData', $monthlyGraphData);
