@@ -17,7 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ $url1=$_SERVER['REQUEST_URI'];
+    header("Refresh: 30; URL=$url1");
 // Require includes
+
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/includes/vnstat.php';
 require __DIR__ . '/includes/utilities.php';
