@@ -80,7 +80,7 @@ class vnStat {
 		foreach($this->vnstatData['interfaces'] as $interface) {
 			array_push($vnstatInterfaces, $interface['id']);
 		}
-
+        asort($vnstatInterfaces);
 		return $vnstatInterfaces;
 	}
 
