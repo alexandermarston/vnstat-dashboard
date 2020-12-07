@@ -78,7 +78,7 @@ class vnStat {
 		$vnstatInterfaces = [];
 
 		foreach($this->vnstatData['interfaces'] as $interface) {
-			array_push($vnstatInterfaces, $interface['id']);
+			array_push($vnstatInterfaces, $interface['name']);
 		}
 
 		return $vnstatInterfaces;
@@ -95,8 +95,8 @@ class vnStat {
 		$trafficData = [];
 
 		// Get the array index for the chosen interface
-		$arrayIndex = array_search($interface, array_column($this->vnstatData['interfaces'], 'id'));
- 
+		$arrayIndex = array_search($interface, array_column($this->vnstatData['interfaces'], 'name'));
+
 		if ($timeperiod == 'top10') {
 			if ($type == 'table') {
 				foreach ($this->vnstatData['interfaces'][$arrayIndex]['traffic']['top'.$typeAppend] as $traffic) {
